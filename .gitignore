@@ -1,1 +1,46 @@
-/.metadata/
+
+CMakeLists.txt.user
+CMakeCache.txt
+CMakeFiles
+CMakeScripts
+Testing
+Makefile
+cmake_install.cmake
+install_manifest.txt
+compile_commands.json
+CTestTestfile.cmake
+_deps
+build
+
+## 파일 무시 (test.txt) 
+
+## 다음과 같은 확장자는 전체 무시  
+*.text 
+*.exe 
+*.zip
+*.log
+*.bin
+*.launch
+*.chm
+*.cproject
+*.project
+*.fw
+*.elf
+*.map
+*.json
+
+## 폴더 무시
+cmake/
+build/
+삭제대기/
+backup/
+.vs/
+.metadata/
+Debug/
+Release/
+.settings/
+Templates/
+_htmresc/
+stm32g070rbt6_cube/
+stm32g070rbt6_cube_led/
+.imgs/
