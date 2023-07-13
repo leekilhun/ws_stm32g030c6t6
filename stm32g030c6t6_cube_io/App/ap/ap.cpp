@@ -22,6 +22,8 @@ ap_io mcu_io;
 /****************************************************
   1. ap instances
  ****************************************************/
+enStepMotor motor[3]{};
+
 
 void  apInit(void)
 {
@@ -31,6 +33,18 @@ void  apInit(void)
 #endif
 
 
+  enStepMotor::cfg_t cfg{};
+  cfg.motor_id = 0;
+  cfg.ptr_timer = timGetData(_DEF_TIM1);
+  motor[0].Init(cfg);
+
+  cfg.motor_id = 0;
+  cfg.ptr_timer = timGetData(_DEF_TIM1);
+  motor[1].Init(cfg);
+
+  cfg.motor_id = 0;
+  cfg.ptr_timer = timGetData(_DEF_TIM1);
+  motor[2].Init(cfg);
 
   /*Assign Obj */
   mcu_io.Init();
