@@ -1,0 +1,76 @@
+{
+	"folders": [
+		{
+			"path": "stm32g030c6t6_cube_io"
+		}
+	],
+	"settings":  {
+    "cmake.generator": "MinGW Makefiles",
+    "cmake.configureArgs": [
+        //"-DARM_TOOLCHAIN_DIR=C:/DevSoft/arm-tools/gcc-arm-none-eabi-10.3-2021.10/bin",
+        //"-DCMAKE_MAKE_PROGRAM=C:/DevSoft/arm-tools/xpack-windows-build-tools-4.4.0-1/bin/make.exe"
+        //"-DARM_TOOLCHAIN_DIR=C:/tools/build_tools/gcc-arm-none-eabi-10.3-2021.10/bin",
+		//"-DCMAKE_MAKE_PROGRAM=c:/tools/build_tools/mingw32/bin"
+		"-DARM_TOOLCHAIN_DIR=C:/tools/gcc-arm-none-eabi-10.3-2021.10/bin",
+		"-DCMAKE_MAKE_PROGRAM=c:/tools/mingw32/bin"
+    ],	
+    "terminal.integrated.env.windows": {  
+			//"PATH": "${env:PATH};c:/tools/build_tools/mingw32/bin;",	
+		 	//"ARM_TOOLCHAIN_DIR":"C:/tools/build_tools/gcc-arm-none-eabi-10.3-2021.10/bin",	
+			"PATH": "${env:PATH};c:/tools/mingw32/bin;",	
+		 	"ARM_TOOLCHAIN_DIR":"C:/tools/gcc-arm-none-eabi-10.3-2021.10/bin",
+			},
+    "files.autoSave": "onFocusChange",
+    "editor.fontFamily": "D2Coding,Consolas, 'Courier New', monospace",
+		"editor.tabSize": 2,
+		"files.associations": {
+			"eeprom_emul.h": "c",
+			"array": "cpp",
+			"atomic": "cpp",
+			"bit": "cpp",
+			"*.tcc": "cpp",
+			"cctype": "cpp",
+			"clocale": "cpp",
+			"cmath": "cpp",
+			"compare": "cpp",
+			"concepts": "cpp",
+			"cstdarg": "cpp",
+			"cstddef": "cpp",
+			"cstdint": "cpp",
+			"cstdio": "cpp",
+			"cstdlib": "cpp",
+			"cstring": "cpp",
+			"cwchar": "cpp",
+			"cwctype": "cpp",
+			"deque": "cpp",
+			"unordered_map": "cpp",
+			"vector": "cpp",
+			"exception": "cpp",
+			"algorithm": "cpp",
+			"functional": "cpp",
+			"iterator": "cpp",
+			"memory": "cpp",
+			"memory_resource": "cpp",
+			"numeric": "cpp",
+			"optional": "cpp",
+			"random": "cpp",
+			"string": "cpp",
+			"string_view": "cpp",
+			"system_error": "cpp",
+			"tuple": "cpp",
+			"type_traits": "cpp",
+			"utility": "cpp",
+			"initializer_list": "cpp",
+			"iosfwd": "cpp",
+			"istream": "cpp",
+			"limits": "cpp",
+			"new": "cpp",
+			"ostream": "cpp",
+			"ranges": "cpp",
+			"sstream": "cpp",
+			"stdexcept": "cpp",
+			"streambuf": "cpp",
+			"typeinfo": "cpp"
+		}
+  }
+}
