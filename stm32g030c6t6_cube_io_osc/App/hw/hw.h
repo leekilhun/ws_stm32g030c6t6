@@ -23,6 +23,7 @@ extern "C" {
 #include "button.h"
 #include "swtimer.h"
 #include "gpio.h"
+#include "tim.h"
 
 
 bool hwInit(void);

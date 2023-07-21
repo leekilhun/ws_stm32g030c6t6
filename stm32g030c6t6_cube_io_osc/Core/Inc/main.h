@@ -102,8 +102,8 @@ void Error_Handler(void);
 #define IO_IN_13_GPIO_Port GPIOB
 #define IO_IN_14_Pin GPIO_PIN_15
 #define IO_IN_14_GPIO_Port GPIOB
-#define IO_IN15_Pin GPIO_PIN_8
-#define IO_IN15_GPIO_Port GPIOA
+#define IO_IN_15_Pin GPIO_PIN_8
+#define IO_IN_15_GPIO_Port GPIOA
 #define IO_OUT_15_Pin GPIO_PIN_6
 #define IO_OUT_15_GPIO_Port GPIOC
 #define IO_OUT_14_Pin GPIO_PIN_7
