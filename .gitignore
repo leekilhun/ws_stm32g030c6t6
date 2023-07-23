@@ -34,19 +34,21 @@ build
 *.elf
 *.map
 *.json
+*.code-workspace
 
 ## 폴더 무시
 cmake/
 build/
 삭제대기/
 backup/
-.vs/
 .metadata/
 Debug/
 Release/
 .settings/
 Templates/
 _htmresc/
+.vscode/
+.vs/
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
