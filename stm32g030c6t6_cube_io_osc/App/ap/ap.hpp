@@ -18,6 +18,8 @@
 
 #include "ap_def.h"
 
+#include "def_obj.hpp"
+
 /* ap object*/
 #include "ap_utils.hpp"
 
@@ -26,12 +28,12 @@
 /* register -> communication -> basic unit(engine) -> combined unit(engine) -> control */
 //register + io_manager
 //basic
-
-
+#include "ap_io.hpp"
 
 
 //control
 
+#include "enStepMotor.hpp"
 
 //machine test
 //api

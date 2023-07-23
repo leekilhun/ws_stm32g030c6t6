@@ -25,6 +25,12 @@ bool hwInit(void)
   ret &= uartInit();
 #endif
 
+#ifdef _USE_HW_TIM
+  ret &= timInit();
+#endif
+
+
+
 #ifdef _USE_HW_LOG
   ret &= logInit();
 
@@ -33,8 +39,8 @@ bool hwInit(void)
   logPrintf("Core Clock    \t\t: %d Mhz\r\n\n\n", SystemCoreClock/1000000);
 #else // use small size log func
   uartOpen(HW_UART_CH_DEBUG, 115200);
-  logPrintf("[ Firmware Begin... ]\r\n\n\n");
-  logPrintf("Core Clock    \t\t: %d Mhz\r\n\n\n", SystemCoreClock/1000000);
+  logPrintf("[ Firmware Begin... ]\r\n");
+  logPrintf("Core Clock    \t\t: %d Mhz\r\n", SystemCoreClock/1000000);
 #endif
 
 

@@ -27,6 +27,16 @@
 #define _USE_HW_UART_1_DMA
 #define _USE_HW_UART_2_DMA
 
+
+
+#define _USE_HW_TIM
+#ifdef  _USE_HW_TIM
+#define      HW_TIM_MAX_CH          1
+#define        _TIM_3               0
+#endif
+
+
+
 //#define _USE_HW_CLI
 #define      HW_CLI_CMD_LIST_MAX    32
 #define      HW_CLI_CMD_NAME_MAX    16
