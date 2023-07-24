@@ -30,6 +30,7 @@
 //basic
 #include "ap_io.hpp"
 
+#include "uart_cmd.hpp"
 
 //control
 
@@ -38,6 +39,7 @@
 //machine test
 //api
 
+#include "api_cmd.hpp"
 
 
 void  apInit(void);

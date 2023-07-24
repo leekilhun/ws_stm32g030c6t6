@@ -13,55 +13,60 @@
 
 struct enOp
 {
-  enum mode_e
+  enum mode_e :uint8_t
   {
-    READY,
+    READY = 0x10,
     AUTORUN,
     STOP,
     DRY_RUN,
   };
 
-  enum status_e
+  enum status_e :uint8_t
   {
-    INIT,
+    INIT = 0x20,
     ERR_STOP,
     STEP_STOP,
     RUN_READY,
     RUN,
   };
 
-  enum panel_e
+  enum panel_e :uint8_t
   {
-    SW_START,
+    SW_START = 0x30,
     SW_STOP,
     SW_RESET,
     SW_ESTOP,
-    SW_MAX
   };
 
-  enum lamp_e
+  enum lamp_e :uint8_t
   {
-    LAMP_START,
+    LAMP_START = 0x40,
     LAMP_STOP,
     LAMP_RESET,
   };
 
   struct cfg_t
   {
-    ap_reg* ptr_mcu_reg{};
-    ap_io * ptr_mcu_io{};
+  	ap_reg* ptr_mcu_reg{};
+  	ap_io * ptr_mcu_io{};
 
-    uint8_t sw_pin_start{};
-    uint8_t sw_pin_stop{};
-    uint8_t sw_pin_reset{};
-    uint8_t sw_pin_estop{};
+  	GPIO_TypeDef * key_start_port{};
+  	uint16_t       key_start_pin{};
+  	GPIO_TypeDef * key_stop_port{};
+  	uint16_t       key_stop_pin{};
+  	GPIO_TypeDef * key_reset_port{};
+  	uint16_t       key_reset_pin{};
+  	GPIO_TypeDef * key_estop_port{};
+  	uint16_t       key_estop_pin{};
 
+  	GPIO_TypeDef * lamp_start_port{};
+  	uint16_t       lamp_start_pin{};
+  	GPIO_TypeDef * lamp_stop_port{};
+  	uint16_t       lamp_stop_pin{};
+  	GPIO_TypeDef * lamp_reset_port{};
+  	uint16_t       lamp_reset_pin{};
 
-    uint8_t lamp_pin_start{};
-    uint8_t lamp_pin_stop{};
-    uint8_t lamp_pin_reset{};
-
-    cfg_t() = default;
+  	cfg_t() = default;
 
     // copy constructor
     cfg_t(const cfg_t& rhs) = default;
@@ -100,51 +105,68 @@ public:
   }
 
   inline void SetMode(enOp::mode_e md){
-    m_mode = md;
+  	m_mode = md;
   }
 
-
+  inline GPIO_PinState gpioRead(uint8_t key) {
+  	switch (key) {
+  		case SW_START:
+  			return HAL_GPIO_ReadPin(m_cfg.key_start_port,m_cfg.key_start_pin);
+  		case SW_STOP:
+  			return HAL_GPIO_ReadPin(m_cfg.key_stop_port,m_cfg.key_stop_pin);
+  		case SW_RESET:
+  			return HAL_GPIO_ReadPin(m_cfg.key_reset_port,m_cfg.key_reset_pin);
+  		case SW_ESTOP:
+  			if (HAL_GPIO_ReadPin(m_cfg.key_estop_port,m_cfg.key_estop_pin) == GPIO_PIN_RESET)// reverse
+  				return GPIO_PIN_SET;
+  			else
+  				return GPIO_PIN_RESET;
+  		case LAMP_START:
+  			return HAL_GPIO_ReadPin(m_cfg.lamp_start_port,m_cfg.lamp_start_pin);
+  		case LAMP_STOP:
+  			return HAL_GPIO_ReadPin(m_cfg.lamp_stop_port,m_cfg.lamp_stop_pin);
+  		case LAMP_RESET:
+  			return HAL_GPIO_ReadPin(m_cfg.lamp_reset_port,m_cfg.lamp_reset_pin);
+  		default:
+  			break;
+		}
+  	return GPIO_PIN_RESET;
+  }
   inline void UpdateState(){
     enum{in, out, _max};
     std::array<uint8_t, _max> data {};
 
     uint8_t gpio {};
-    gpio |= gpioPinRead(m_cfg.sw_pin_start) << 0;
-    gpio |= gpioPinRead(m_cfg.sw_pin_stop)  << 1;
-    gpio |= gpioPinRead(m_cfg.sw_pin_reset) << 2;
-    gpio |= gpioPinRead(m_cfg.sw_pin_estop) << 3;
+    gpio |= gpioRead(SW_START) << 0;
+    gpio |= gpioRead(SW_STOP)  << 1;
+    gpio |= gpioRead(SW_RESET) << 2;
+    gpio |= gpioRead(SW_ESTOP) << 3;
     data[in] = gpio;
 
     gpio = 0x00;
-    gpio |= gpioPinRead(m_cfg.lamp_pin_start) << 0;
-    gpio |= gpioPinRead(m_cfg.lamp_pin_stop)  << 1;
-    gpio |= gpioPinRead(m_cfg.lamp_pin_reset) << 2;
+    gpio |= gpioRead(LAMP_START) << 0;
+    gpio |= gpioRead(LAMP_STOP)  << 1;
+    gpio |= gpioRead(LAMP_RESET) << 2;
     data[out] = gpio;
 
     m_cfg.ptr_mcu_io->m_sysio.system_io = (uint16_t)((uint16_t)data[in]<<0 | (uint16_t)data[out]<<8) ;
   }
 
   inline bool GetPressed(enOp::panel_e op_sw){
-    switch (op_sw)
-    {
-      case enOp::panel_e::SW_START:   return gpioPinRead(m_cfg.sw_pin_start);
-      case enOp::panel_e::SW_STOP:    return gpioPinRead(m_cfg.sw_pin_stop);
-      case enOp::panel_e::SW_RESET:   return gpioPinRead(m_cfg.sw_pin_reset);
-      case enOp::panel_e::SW_ESTOP:   return !gpioPinRead(m_cfg.sw_pin_estop); //reverse
-      default:        return false;
-    }
+  	return (gpioRead((uint8_t)op_sw) == GPIO_PIN_SET);
   }
 
   inline void LampOnOff(lamp_e lamp, bool state = true){
+  	GPIO_PinState set_state = state?GPIO_PIN_SET:GPIO_PIN_RESET;
     switch (lamp) {
       case LAMP_START:
-        gpioPinWrite(m_cfg.lamp_pin_start, state);
+      	HAL_GPIO_WritePin(m_cfg.lamp_start_port, m_cfg.lamp_start_pin, set_state );
         break;
       case LAMP_STOP:
-        gpioPinWrite(m_cfg.lamp_pin_stop, state);
+      	HAL_GPIO_WritePin(m_cfg.lamp_stop_port, m_cfg.lamp_stop_pin, set_state );
         break;
       case LAMP_RESET:
-        gpioPinWrite(m_cfg.lamp_pin_reset, state);
+      	HAL_GPIO_WritePin(m_cfg.lamp_reset_port, m_cfg.lamp_reset_pin, set_state );
         break;
       default:
         break;
@@ -154,13 +176,13 @@ public:
   inline void LampToggle(lamp_e lamp){
     switch (lamp) {
       case LAMP_START:
-        gpioPinToggle(m_cfg.lamp_pin_start);
+      	HAL_GPIO_TogglePin(m_cfg.lamp_start_port, m_cfg.lamp_start_pin);
         break;
       case LAMP_STOP:
-        gpioPinToggle(m_cfg.lamp_pin_stop);
+      	HAL_GPIO_TogglePin(m_cfg.lamp_stop_port, m_cfg.lamp_stop_pin);
         break;
       case LAMP_RESET:
-        gpioPinToggle(m_cfg.lamp_pin_reset);
+      	HAL_GPIO_TogglePin(m_cfg.lamp_reset_port, m_cfg.lamp_reset_pin);
         break;
       default:
         break;

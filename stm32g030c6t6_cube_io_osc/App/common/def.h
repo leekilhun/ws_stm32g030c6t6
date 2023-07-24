@@ -22,7 +22,7 @@
  extern "C" {
 #endif
 
-
+#include "err_code.h"
 #include "main.h"
 
 
