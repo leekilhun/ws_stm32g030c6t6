@@ -23,50 +23,42 @@ CMD::uart_cmd cmd_comm;
   1. ap instances
  ****************************************************/
 enStepMotor motor[3]{};
-
-CMD::api_cmd main_cmd;
-
+enOp op_panel{};
 
 void  apInit(void)
 {
+
+  {
+    using namespace CMD;
+    uart_cmd::cfg_t cfg{};
+    cfg.ch = HW_UART_CH_RS485;
+    cfg.baud = 115200;
+    cmd_comm.Init(cfg);
+  }
 
 #ifdef _USE_HW_CLI
 
 #endif
 
-  timStart(_DEF_TIM1);
+/* operating panel sw initial */
+	{
+		enOp::cfg_t cfg = {};
+		cfg.ptr_mcu_io = &mcu_io;
+
+		op_panel.Init(cfg);
+	}
+
 
   enStepMotor::cfg_t cfg{};
   cfg.motor_id = 0;
   cfg.ptr_timer = timGetData(_DEF_TIM1);
-  cfg.out_addr_step = ap_io::out00;
-  cfg.out_addr_dir = ap_io::out01;
-  cfg.out_addr_enable = ap_io::out02;
-  cfg.in_addr_org = ap_io::in00;
-  cfg.in_addr_ccw_limit = ap_io::in01;
-  cfg.in_addr_cw_limit = ap_io::in02;
-  cfg.ptr_mcu_io = &mcu_io;
   motor[0].Init(cfg);
 
-  cfg.motor_id = 1;
-  cfg.out_addr_step = ap_io::out03;
-  cfg.out_addr_dir = ap_io::out04;
-  cfg.out_addr_enable = ap_io::out05;
-  cfg.in_addr_org = ap_io::in03;
-  cfg.in_addr_ccw_limit = ap_io::in04;
-  cfg.in_addr_cw_limit = ap_io::in05;
-  cfg.ptr_mcu_io = &mcu_io;
+  cfg.motor_id = 0;
   cfg.ptr_timer = timGetData(_DEF_TIM1);
   motor[1].Init(cfg);
 
-  cfg.motor_id = 2;
-  cfg.out_addr_step = ap_io::out06;
-  cfg.out_addr_dir = ap_io::out07;
-  cfg.out_addr_enable = ap_io::out10;
-  cfg.in_addr_org = ap_io::in06;
-  cfg.in_addr_ccw_limit = ap_io::in07;
-  cfg.in_addr_cw_limit = ap_io::in10;
-  cfg.ptr_mcu_io = &mcu_io;
+  cfg.motor_id = 0;
   cfg.ptr_timer = timGetData(_DEF_TIM1);
   motor[2].Init(cfg);
 
@@ -86,10 +78,8 @@ void  apMain(void)
 {
   uint32_t pre_time;
   uint32_t out_cnt = 0;
-
-  timEnableISR(_DEF_TIM1);
-
   pre_time = millis();
+
   while (1)
   {
 
@@ -99,7 +89,7 @@ void  apMain(void)
       ledToggle(_DEF_LED1);
       //logPrintf(">>hdma_usart1_rx.Instance->CNDTR %d \n",hdma_usart1_rx.Instance->CNDTR);
       out_cnt =  out_cnt  % 16;
-      mcu_io.OutputToggle(ap_io::out00 + out_cnt);
+      mcu_io.OutputToggle(ap_io::out00_ready_lamp + out_cnt);
       out_cnt++;
     }
 

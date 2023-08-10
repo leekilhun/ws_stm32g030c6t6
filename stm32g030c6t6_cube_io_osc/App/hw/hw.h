@@ -24,7 +24,6 @@ extern "C" {
 #include "swtimer.h"
 #include "gpio.h"
 #include "tim.h"
-#include "cmd.h"
 
 
 bool hwInit(void);

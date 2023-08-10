@@ -33,13 +33,12 @@
 #include "uart_cmd.hpp"
 
 //control
-
+#include "enOp.hpp"
 #include "enStepMotor.hpp"
 
 //machine test
 //api
 
-#include "api_cmd.hpp"
 
 
 void  apInit(void);

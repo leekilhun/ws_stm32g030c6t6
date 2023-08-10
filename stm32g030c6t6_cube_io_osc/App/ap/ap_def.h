@@ -25,6 +25,15 @@
 #ifndef ERROR_SUCCESS
 #define ERROR_SUCCESS 0
 #endif
+#ifndef ERROR_FAIL
+#define ERROR_FAIL -1
+#endif
+
+#define GPIO_IN_STATE_ON  GPIO_PIN_RESET
+#define GPIO_IN_STATE_OFF  GPIO_PIN_SET
+#define GPIO_OUT_STATE_ON  GPIO_PIN_SET
+#define GPIO_OUT_STATE_OFF  GPIO_PIN_RESET
+
 
 #include "def_obj.hpp"
 

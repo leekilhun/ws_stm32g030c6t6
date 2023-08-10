@@ -42,12 +42,11 @@ namespace CMD
 {
   //TX  (secondary -> main) provide information
   enum TX_TYPE:uint16_t
-  {
-    TX_MCU_DATA       = 0x0001,
-    TX_MOTOR_DATA     = 0x0002,
+  {    
+    TX_OK_RESPONSE      = 0x0000,
+    TX_TOOL_DATA        = 0x0001,
 
-    TX_FIRM_INFO      = 0x0050,
-    TX_OK_RESPONSE    = 0x00AA
+
   };
 
 
@@ -56,8 +55,14 @@ namespace CMD
   enum CMD_TYPE:uint16_t
   {
     CMD_OK_RESPONSE                   = 0x0000,
-    CMD_READ_MCU_DATA                 = 0x0001,
-    CMD_READ_FIRM_INFO                = 0x0002,
+    CMD_READ_TOOL_DATA                = 0x0001,
+     
+    CMD_CTRL_IO_OUT                   = 0x0010,
+    CMD_CTRL_CYL                      = 0x0011,
+		CMD_CTRL_VAC                      = 0x0012,
+
+    CMD_CTRL_INITIALIZE               = 0x001A,
+		CMD_CTRL_VIRTUAL_SW               = 0x001B,
 
     CMD_CTRL_MOT_ORIGIN               = 0x0020,
     CMD_CTRL_MOT_ONOFF                = 0x0021,
@@ -72,6 +77,7 @@ namespace CMD
     CMD_CTRL_MOT_MOVE_VEL             = 0x002A,
     CMD_CTRL_MOT_RELMOVE_VEL          = 0x002B,
     CMD_CTRL_MOT_VEL_JOG              = 0x002C,
+
   };
 
 
@@ -118,17 +124,17 @@ namespace CMD
 
 
     struct packet_st {
-      uint16_t         type{};
-      uint16_t         obj_id{};
-      uint16_t        data_length{};
-      uint8_t*        data{};
+      uint16_t       type{};
+      uint16_t       obj_id{};
+      uint16_t       data_length{};
+      uint8_t*       data{};
       uint8_t        checksum{};
       uint8_t        checksum_recv{};
       std::array <uint8_t, CMD_MAX_PACKET_LENGTH> buffer{};
-      uint8_t         buffer_idx{};
-      uint16_t        data_cnt{};
-      uint32_t        resp_ms{};
-      prc_step_t      state{};
+      uint8_t        buffer_idx{};
+      uint16_t       data_cnt{};
+      uint32_t       resp_ms{};
+      prc_step_t     state{};
 
       packet_st() = default;
       // copy constructor

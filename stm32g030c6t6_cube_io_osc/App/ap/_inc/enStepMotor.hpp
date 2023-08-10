@@ -13,26 +13,13 @@ constexpr int MOTOR_PULSES_PER_REV = 1600;  // Motor pulses per revolution, moto
 constexpr int MOTOR_MAX_PRM = 500;// Maximum motor RPM
 constexpr int MOTOR_ACCEL_TIME_MS = 200;  // Acceleration and deceleration time
 
-struct enStepMotor
+class enStepMotor
 {
+public:
   struct cfg_t{
     uint8_t       motor_id{};
     tim_tbl_t*    ptr_timer{};
-    ap_io *ptr_mcu_io{};
-    uint32_t out_addr_step{};
-    uint32_t out_addr_dir{};
-    uint32_t out_addr_enable{};
-    uint32_t in_addr_org{};
-    uint32_t in_addr_ccw_limit{};
-    uint32_t in_addr_cw_limit{};
- /*
-    GPIO_TypeDef * gpio_enable_port{};
-  	uint16_t       gpio_enable_pin{};
-    GPIO_TypeDef * gpio_dir_port{};
-  	uint16_t       gpio_dir_pin{};
-    GPIO_TypeDef * gpio_pulse_port{};
-  	uint16_t       gpio_pulse_pin{};
-*/
+
     cfg_t() = default;
 
     // copy constructor
@@ -47,7 +34,7 @@ struct enStepMotor
 
 
   enum :uint8_t {motor_run,motor_stop};
-
+public:
 
   // Motor control variables
   volatile uint32_t accel_index;
@@ -80,15 +67,14 @@ struct enStepMotor
    */
   prc_step_t step;
   cfg_t m_cfg;
-  bool m_isEnable;
-  bool m_isInit;
 
 public:
   enStepMotor ():accel_index{},vel_index{},decel_index{},dir{},
   step_position{}, total_steps{}, speed{}, step_count{}, count{}, move_done{},
-  state{}, step{} , m_cfg{} ,m_isEnable{}, m_isInit{} {
+  state{}, step{} , m_cfg{} {
+
   };
-  ~enStepMotor (){};
+  virtual ~enStepMotor (){};
   /*
     enStepMotor (const enStepMotor &other){};
     enStepMotor (enStepMotor &&other){};
@@ -102,17 +88,15 @@ public:
    */
 
 private:
-  inline void delay_us(uint32_t us)
-  {
+
+  inline void delay_us(uint32_t us) {
     volatile uint32_t i;
-    for (i = 0; i < us; i++)
-    {    }
-    // for (i=0; i<us*10; i++) {
-    //   __NOP();
-    // }
+    for (i=0; i<us; i++) { }
   }
 
-  uint S_table_len(uint *table);
+
+
+  uint S_table_len(uint* table);
   void S_curve_gen(int steps);
 
 public:
@@ -127,12 +111,10 @@ public:
 
     // Start the timer and motor
 
-    //timStart(_DEF_TIM1);
-    //timAttachCB(_DEF_TIM1, this, ISR_axis);
-
+    timStart(_DEF_TIM1);
+    timAttachCB(_DEF_TIM1, this, ISR_axis);
     m_cfg = cfg;
-    m_cfg.ptr_timer->obj = this;
-    m_cfg.ptr_timer->func_cb = ISR_axis;
+
   };
 
 
@@ -168,6 +150,7 @@ public:
     for (int i=0; i<STEPS ; i++)
     {
       StepPulse();
+
       delay_us(delays[i]);
     }
 
@@ -175,6 +158,7 @@ public:
     for (int i=0; i<STEPS*4; i++)
     {
       StepPulse();
+
       delay_us(high_speed);
     }
 
@@ -182,6 +166,7 @@ public:
     for (int i=0; i<STEPS; i++)
     {
       StepPulse();
+
       delay_us(delays[STEPS-i-1]);
     }
 
@@ -200,26 +185,19 @@ public:
 
   inline void Enable(){
     //gpioPinWrite(_GPIO_MOT_X_ENABLE,_DEF_LOW);
-    m_cfg.ptr_mcu_io->OutputOn(m_cfg.out_addr_enable);
   };
 
   inline void Disable(){
     //gpioPinWrite(_GPIO_MOT_X_ENABLE,_DEF_HIGH);
-    m_cfg.ptr_mcu_io->OutputOff(m_cfg.out_addr_enable);
   };
 
   inline void StepPulse(){
-    //LL_GPIO_SetOutputPin(GPIOB, LL_GPIO_PIN_13);
-    //LL_GPIO_ResetOutputPin(GPIOB, LL_GPIO_PIN_13);
-    m_cfg.ptr_mcu_io->OutputToggle(m_cfg.out_addr_step);
+    LL_GPIO_SetOutputPin(GPIOB, LL_GPIO_PIN_13);
+    LL_GPIO_ResetOutputPin(GPIOB, LL_GPIO_PIN_13);
   };
 
   inline void Direction(bool is_ccw){
     //gpioPinWrite(_GPIO_MOT_X_DIR, is_ccw);
-    if (is_ccw)
-      m_cfg.ptr_mcu_io->OutputOn(m_cfg.out_addr_dir);
-    else
-      m_cfg.ptr_mcu_io->OutputOff(m_cfg.out_addr_dir);
   };
 
 

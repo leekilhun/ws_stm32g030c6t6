@@ -22,7 +22,7 @@
 
 #define _USE_HW_UART
 #define      HW_UART_MAX_CH         2
-#define      HW_UART_CH_CMD         _DEF_UART1
+#define      HW_UART_CH_RS485       _DEF_UART1
 #define      HW_UART_CH_DEBUG       _DEF_UART2
 #define _USE_HW_UART_1_DMA
 #define _USE_HW_UART_2_DMA
@@ -43,9 +43,6 @@
 #define      HW_CLI_LINE_HIS_MAX    8
 #define      HW_CLI_LINE_BUF_MAX    64
 
-
-//#define _USE_HW_CMD
-#define      HW_CMD_MAX_DATA_LENGTH 1024
 
 //#define _USE_HW_I2C
 
