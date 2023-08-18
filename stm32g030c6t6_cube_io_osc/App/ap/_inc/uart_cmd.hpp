@@ -14,14 +14,15 @@
 main(main controller), secondary(tool system)
 
 
-TX  (secondary -> main) provide information
+TX  (main -> secondary) request information or action 
 obj_id [option] 0 is all or ignore
 | STX0 | STX1 | Type  | objId | Data Length |Data      | Checksum |
 | :--- |:-----|:------|:----- |:------------|:---------| :------  |
 | 0x4A | 0x4C | 2byte | 2byte | 2 byte      |Data 0～n | 1byte    |
 
 
-RX (main -> secondary) request information or action
+Message
+RX (secondary -> main) provide information
 obj_id [option] 0 is all or ignore
 | STX0 | STX1 | Type  | objId | Data Length |Data      | Checksum |
 | :--- |:-----|:------|:----- |:------------|:---------| :------  |
@@ -40,13 +41,55 @@ p_cmd->packet.buffer[index++] = check_sum;
 
 namespace CMD
 {
-  //TX  (secondary -> main) provide information
+
+  #if 0
+  //TX (main -> secondary) request information or action
+  enum TX_TYPE:uint16_t
+  {
+    TX_OK_RESPONSE                    = 0x0000,
+    TX_READ_TOOL_DATA                 = 0x0001,
+
+    TX_CTRL_IO_OUT                    = 0x0010,
+    TX_CTRL_CYL                       = 0x0011,
+    TX_CTRL_VAC                       = 0x0012,
+
+    TX_CTRL_INITIALIZE                = 0x001A,
+    TX_CTRL_VIRTUAL_SW                = 0x001B,
+
+    TX_CTRL_MOT_ORIGIN                = 0x0020,
+    TX_CTRL_MOT_ONOFF                 = 0x0021,
+    TX_CTRL_MOT_MOVE                  = 0x0022,
+    TX_CTRL_MOT_STOP                  = 0x0023,
+    TX_CTRL_MOT_JOG                   = 0x0024,
+    TX_CTRL_MOT_LIMIT                 = 0x0025,
+    TX_CTRL_MOT_ZEROSET               = 0x0026,
+    TX_CTRL_MOT_RELMOVE               = 0x0027,
+    TX_CTRL_MOT_CLEAR_ALARM           = 0x0028,
+    TX_CTRL_MOT_CHANGE_VEL            = 0x0029,
+    TX_CTRL_MOT_MOVE_VEL              = 0x002A,
+    TX_CTRL_MOT_RELMOVE_VEL           = 0x002B,
+    TX_CTRL_MOT_VEL_JOG               = 0x002C,
+
+    
+  };
+
+
+
+  //RX  (secondary -> main) provide information
+  enum MSG_TYPE:uint16_t
+  {
+    MSG_OK_RESPONSE                   = 0x0000,
+    MSG_TOOL_DATA                     = 0x0001,
+  };
+
+#endif
+
+//TX  (secondary -> main) provide information
   enum TX_TYPE:uint16_t
   {    
     TX_OK_RESPONSE      = 0x0000,
     TX_TOOL_DATA        = 0x0001,
-
-
+    TX_TOOL_INFO        = 0x0002,
   };
 
 
@@ -56,10 +99,12 @@ namespace CMD
   {
     CMD_OK_RESPONSE                   = 0x0000,
     CMD_READ_TOOL_DATA                = 0x0001,
+    CMD_READ_TOOL_INFO                = 0x0002,
      
     CMD_CTRL_IO_OUT                   = 0x0010,
     CMD_CTRL_CYL                      = 0x0011,
 		CMD_CTRL_VAC                      = 0x0012,
+    CMD_CTRL_REG_OPTION               = 0x0013,
 
     CMD_CTRL_INITIALIZE               = 0x001A,
 		CMD_CTRL_VIRTUAL_SW               = 0x001B,
@@ -79,7 +124,6 @@ namespace CMD
     CMD_CTRL_MOT_VEL_JOG              = 0x002C,
 
   };
-
 
 
   constexpr uint8_t CMD_STX0               = 0x4A;
@@ -131,10 +175,10 @@ namespace CMD
       uint8_t        checksum{};
       uint8_t        checksum_recv{};
       std::array <uint8_t, CMD_MAX_PACKET_LENGTH> buffer{};
-      uint8_t        buffer_idx{};
-      uint16_t       data_cnt{};
-      uint32_t       resp_ms{};
-      prc_step_t     state{};
+      uint8_t         buffer_idx{};
+      uint16_t        data_cnt{};
+      uint32_t        resp_ms{};
+      prc_step_t      state{};
 
       packet_st() = default;
       // copy constructor
@@ -211,11 +255,16 @@ namespace CMD
     inline bool Recovery() {
       uartClose(m_cfg.ch);
       /* */
-      return uartOpen(m_cfg.ch, m_cfg.baud);
+      m_Isconnected = uartOpen(m_cfg.ch, m_cfg.baud);
+      return m_Isconnected;
     }
 
     inline bool IsAvailableComm(){
       return (m_reqFlag == 0);
+    }
+
+    inline bool IsConnected() {
+      return m_Isconnected;
     }
 
     inline bool ReceiveProcess(){

@@ -167,6 +167,20 @@ public:
     pIo = p_io;
  }*/
 
+   //Update information that has changed compared to previous data
+  inline void SetOutputReg(uint32_t reg, uint8_t bank = 0)
+  {
+    uint32_t x_reg = reg ^ m_out.data;
+
+    for(uint8_t i = 0 ; i < 32; i++)
+    {
+      if((x_reg >>(i))&1)
+      {
+        SetGpioOut((out_e)(i+AP_DEF_START_OUT_ADDR),((reg>>(i))&1));
+      }
+    }
+  }
+
   inline int SetGpioOut(out_e out_idx, bool onoff = true)
   {
     if ((uint32_t)out_idx < AP_DEF_START_OUT_ADDR)

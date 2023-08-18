@@ -22,12 +22,13 @@
 
 /* ap object*/
 #include "ap_utils.hpp"
-
+#include "ap_dat.hpp"
 
 /* ap object */
 /* register -> communication -> basic unit(engine) -> combined unit(engine) -> control */
 //register + io_manager
 //basic
+#include "ap_reg.hpp"
 #include "ap_io.hpp"
 
 #include "uart_cmd.hpp"
@@ -37,7 +38,7 @@
 #include "enStepMotor.hpp"
 
 //machine test
-//api
+#include "api_cmd.hpp"
 
 
 

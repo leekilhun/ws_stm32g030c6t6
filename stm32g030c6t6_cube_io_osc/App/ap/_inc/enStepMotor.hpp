@@ -20,6 +20,13 @@ public:
     uint8_t       motor_id{};
     tim_tbl_t*    ptr_timer{};
 
+    GPIO_TypeDef * gpio_port_step{};
+  	uint16_t       gpio_pin_step{};
+  	GPIO_TypeDef * gpio_port_dir{};
+  	uint16_t       gpio_pin_dir{};
+  	GPIO_TypeDef * gpio_port_enable{};
+  	uint16_t       gpio_pin_enable{};
+
     cfg_t() = default;
 
     // copy constructor
@@ -65,13 +72,13 @@ public:
     volatile uint32_t time_since_last_step;  // Time since the last step in microseconds
     volatile uint32_t last_step_time;  // Time of the last step in microseconds
    */
-  prc_step_t step;
+  prc_step_t m_step;
   cfg_t m_cfg;
 
 public:
   enStepMotor ():accel_index{},vel_index{},decel_index{},dir{},
   step_position{}, total_steps{}, speed{}, step_count{}, count{}, move_done{},
-  state{}, step{} , m_cfg{} {
+  state{}, m_step{} , m_cfg{} {
 
   };
   virtual ~enStepMotor (){};
@@ -88,13 +95,6 @@ public:
    */
 
 private:
-
-  inline void delay_us(uint32_t us) {
-    volatile uint32_t i;
-    for (i=0; i<us; i++) { }
-  }
-
-
 
   uint S_table_len(uint* table);
   void S_curve_gen(int steps);
@@ -123,11 +123,17 @@ public:
   {
     constexpr auto STEPS = MOTOR_PULSES_PER_REV;
 
+    auto delay_us = [](uint32_t us)
+    {
+     volatile uint32_t i;
+    for (i=0; i<us; i++) { }        
+    };
+
     uint32_t delays[STEPS]{};
-    float angle =1;
+    float angle =1.0;
     float accel = 0.01;
-    float c0 = 2000 * sqrt(2 * angle/accel)*0.67703;
-    float last_delay = 0;
+    float c0 = 2000.0 * sqrt(2.0 * angle/accel)*0.67703;
+    float last_delay = 0.0;
     //float max_feq = (MOTOR_MAX_PRM/60)*MOTOR_PULSES_PER_REV;
     uint32_t high_speed = /*(1/max_feq)*1000000 */360;
 
@@ -150,7 +156,6 @@ public:
     for (int i=0; i<STEPS ; i++)
     {
       StepPulse();
-
       delay_us(delays[i]);
     }
 
@@ -158,7 +163,6 @@ public:
     for (int i=0; i<STEPS*4; i++)
     {
       StepPulse();
-
       delay_us(high_speed);
     }
 
@@ -166,7 +170,6 @@ public:
     for (int i=0; i<STEPS; i++)
     {
       StepPulse();
-
       delay_us(delays[STEPS-i-1]);
     }
 
@@ -184,22 +187,27 @@ public:
   }
 
   inline void Enable(){
-    //gpioPinWrite(_GPIO_MOT_X_ENABLE,_DEF_LOW);
+    HAL_GPIO_WritePin(m_cfg.gpio_port_enable, m_cfg.gpio_pin_enable, GPIO_PIN_SET);
   };
 
   inline void Disable(){
-    //gpioPinWrite(_GPIO_MOT_X_ENABLE,_DEF_HIGH);
+    HAL_GPIO_WritePin(m_cfg.gpio_port_enable, m_cfg.gpio_pin_enable, GPIO_PIN_RESET);
   };
 
   inline void StepPulse(){
-    LL_GPIO_SetOutputPin(GPIOB, LL_GPIO_PIN_13);
-    LL_GPIO_ResetOutputPin(GPIOB, LL_GPIO_PIN_13);
+    //LL_GPIO_SetOutputPin(GPIOB, LL_GPIO_PIN_13);
+    //LL_GPIO_ResetOutputPin(GPIOB, LL_GPIO_PIN_13);
+    HAL_GPIO_WritePin(m_cfg.gpio_port_step, m_cfg.gpio_pin_step, GPIO_PIN_SET);
+    HAL_GPIO_WritePin(m_cfg.gpio_port_step, m_cfg.gpio_pin_step, GPIO_PIN_RESET);
   };
 
-  inline void Direction(bool is_ccw){
-    //gpioPinWrite(_GPIO_MOT_X_DIR, is_ccw);
+  inline void Direction(bool is_ccw)
+  {
+    if (is_ccw)
+      HAL_GPIO_WritePin(m_cfg.gpio_port_dir, m_cfg.gpio_pin_dir, GPIO_PIN_SET);
+    else
+      HAL_GPIO_WritePin(m_cfg.gpio_port_dir, m_cfg.gpio_pin_dir, GPIO_PIN_RESET);
   };
-
 
   static void ISR_axis(void* obj, void* w_param, void* l_param);
 
