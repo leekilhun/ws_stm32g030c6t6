@@ -49,6 +49,7 @@ extern device_info_t *stm32_pid_414_info();
 extern device_info_t *stm32_pid_450_info();
 extern device_info_t *stm32_pid_453_info();
 extern device_info_t *stm32_pid_466_info();
+extern device_info_t *stm32_pid_431_info();
 
 
 device_tbl_t device_tbl[] =
@@ -64,6 +65,7 @@ device_tbl_t device_tbl[] =
         {0x450, "STM32H74xxx/75xxx",          stm32_pid_450_info},
         {0x453, "STM32C03xxx",                stm32_pid_453_info},
         {0x466, "STM32G03xxx",                stm32_pid_466_info},
+        {0x431, "STM32F411xx",                stm32_pid_431_info},
 
 
         {0x000, " ", NULL},

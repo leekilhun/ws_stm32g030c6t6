@@ -17,13 +17,12 @@ extern "C" {
 
 #include "hw_def.h"
 
-#include "led.h"
 #include "cli.h"
 #include "uart.h"
-#include "button.h"
 #include "swtimer.h"
-#include "gpio.h"
+#include "i2c.h"
 #include "tim.h"
+#include "adc.h"
 
 
 bool hwInit(void);

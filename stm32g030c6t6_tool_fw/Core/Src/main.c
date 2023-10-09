@@ -417,7 +417,7 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pin = IO_IN_0_Pin|IO_IN_1_Pin|IO_IN_2_Pin|IO_IN_3_Pin
                           |IO_IN_4_Pin|IO_IN_5_Pin|IO_IN_15_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
   /*Configure GPIO pins : IO_IN_6_Pin IO_IN_7_Pin IO_IN_8_Pin IO_IN_9_Pin
@@ -427,7 +427,7 @@ static void MX_GPIO_Init(void)
                           |IO_IN_10_Pin|IO_IN_11_Pin|IO_IN_12_Pin|IO_IN_13_Pin
                           |IO_IN_14_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
   /*Configure GPIO pins : IO_OUT_13_Pin IO_OUT_12_Pin IO_OUT_11_Pin */

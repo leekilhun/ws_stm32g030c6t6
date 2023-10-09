@@ -14,20 +14,16 @@
 
 
 
-
-#define _USE_HW_LED
-#define      HW_LED_MAX_CH          1
-#define      HW_LED_CH_DEBUG        _DEF_LED1
-
-
 #define _USE_HW_UART
 #define      HW_UART_MAX_CH         2
 #define      HW_UART_CH_RS485       _DEF_UART1
-#define      HW_UART_CH_DEBUG       _DEF_UART2
-#define _USE_HW_UART_1_DMA
-#define _USE_HW_UART_2_DMA
+#define      HW_LOG_CH              _DEF_UART2
+#define _USE_HW_UART_1_DMA_RX
+#define _USE_HW_UART_2_DMA_RX
 
 
+#define _USE_HW_SWTIMER
+#define      HW_SWTIMER_MAX_CH      4
 
 #define _USE_HW_TIM
 #ifdef  _USE_HW_TIM
@@ -44,6 +40,7 @@
 #define      HW_CLI_LINE_BUF_MAX    (64/2)
 
 
-//#define _USE_HW_I2C
+#define _USE_HW_I2C
+#define      HW_I2C_MAX_CH          1
 
 #endif /* HW_HW_DEF_H_ */

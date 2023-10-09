@@ -36,13 +36,15 @@
 
 
 #include "def_obj.hpp"
+#include "def_err.hpp"
 
 typedef void (*evt_cb)(void* obj, void* w_parm, void* l_parm);
 
 
 
 //#define _USE_AP_MACHINE_TEST
-
+#define  _USE_APP_ENBTN
+#define  _USE_APP_CNTASKS
 
 
 

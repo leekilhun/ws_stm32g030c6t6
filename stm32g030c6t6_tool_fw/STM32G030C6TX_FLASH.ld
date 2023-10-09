@@ -45,7 +45,7 @@ _Min_Stack_Size = 0x400; /* required amount of stack */
 MEMORY
 {
   RAM    (xrw)    : ORIGIN = 0x20000000,   LENGTH = 8K
-  FLASH    (rx)    : ORIGIN = 0x8000800,   LENGTH = 30K
+  FLASH    (rx)   : ORIGIN = 0x08000800,   LENGTH = 30K
 }
 
 /* Sections */
@@ -55,6 +55,7 @@ SECTIONS
   .isr_vector :
   {
     . = ALIGN(4);
+    __isr_vector_addr = .; 
     KEEP(*(.isr_vector)) /* Startup code */
     . = ALIGN(4);
   } >FLASH

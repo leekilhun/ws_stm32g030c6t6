@@ -17,10 +17,6 @@ bool hwInit(void)
   ret &= cliInit();
 #endif
 
-#ifdef _USE_HW_LED
-  ret &= ledInit();
-#endif
-
 #ifdef _USE_HW_UART
   ret &= uartInit();
 #endif
@@ -29,16 +25,19 @@ bool hwInit(void)
   ret &= timInit();
 #endif
 
+#ifdef _USE_HW_ADC
+  ret &= adcInit();
+#endif
 
 
 #ifdef _USE_HW_LOG
   ret &= logInit();
 
-  logOpen(HW_UART_CH_DEBUG, 115200);
+  logOpen(HW_LOG_CH, 115200);
   logPrintf("[ fw Begin... ]\r\n");
   logPrintf("Core Clock    \t\t: %d Mhz\r\n\n\n", SystemCoreClock/1000000);
 #else // use small size log func
-  uartOpen(HW_UART_CH_DEBUG, 115200);
+  uartOpen(HW_LOG_CH, 115200);
   logPrintf("[ Firmware Begin... ]\r\n");
   logPrintf("Core Clock    \t\t: %d Mhz\r\n", SystemCoreClock/1000000);
 #endif
@@ -46,6 +45,10 @@ bool hwInit(void)
 
 #ifdef _USE_HW_I2C
   ret &= i2cInit();
+#endif
+
+#ifdef _USE_HW_SWTIMER
+  ret &=swtimerInit();
 #endif
 
 

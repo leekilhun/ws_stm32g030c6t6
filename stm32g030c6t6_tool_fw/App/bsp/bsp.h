@@ -23,8 +23,6 @@ extern "C" {
   void logPrintf(const char *fmt, ...);
   void logView(const char* file, const char* func, const int line, const char* fmt, ...);
 
-
-
 #ifndef LOG_PRINT
 #define LOG_PRINT(fmt, ...)  logView(__FILE__, __FUNCTION__, __LINE__, fmt, ##__VA_ARGS__)
 #endif

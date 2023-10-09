@@ -738,7 +738,7 @@ void HAL_SYSCFG_StrobeDBattpinsConfig(uint32_t ConfigDeadBattery)
   /* Change strobe configuration of GPIO depending on UCPDx dead battery settings */
   MODIFY_REG(SYSCFG->CFGR1, (SYSCFG_CFGR1_UCPD1_STROBE | SYSCFG_CFGR1_UCPD2_STROBE), ConfigDeadBattery);
 }
-#endif /* SYSCFG_CFGR1_UCPD1_STROBE || SYSCFG_CFGR1_UCPD2_STROBE */
+#endif /* SYSCFG_CFGR1_ || SYSCFG_CFGR1_UCPD2_STROBE */
 /**
   * @}
   */

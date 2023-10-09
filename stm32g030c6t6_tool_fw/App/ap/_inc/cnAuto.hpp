@@ -8,10 +8,11 @@
 #ifndef AP__INC_CNAUTO_HPP_
 #define AP__INC_CNAUTO_HPP_
 
+#include "ap_def.h"
 
 
+#define AUTO_ALARM(head, msg) AlarmAuto(head, (__FILE__), __FUNCTION__, __LINE__, msg)
 
-//#define AUTO_ALARM(head, msg)  AlarmAuto(head, (__FILE__), __FUNCTION__, __LINE__,  msg)
 
 struct cnAuto
 {
@@ -19,7 +20,6 @@ struct cnAuto
    *  data
    ****************************************************/
 public:
-
   enum virtual_key_e : uint8_t
   {
     vkey_start,
@@ -28,76 +28,75 @@ public:
     vkey_max,
   };
 
-
-
-  struct cfg_t {
-    ap_reg* ptr_apReg;
-    enOp* ptr_op;
-    //ap_log* ptr_apLog;
-    ap_io* ptr_io;
-    MOTOR::cnMotors* ptr_motors{};
+  struct cfg_t
+  {
+    ap_reg *ptr_apReg{};
+    enOp *ptr_op{};
+    ap_io *ptr_io{};
 
     cfg_t() = default;
 
     // copy constructor
-    cfg_t(const cfg_t& rhs) = default;
+    cfg_t(const cfg_t &rhs) = default;
     // copy assignment operator
-    cfg_t& operator=(const cfg_t& rhs) = default;
+    cfg_t &operator=(const cfg_t &rhs) = default;
     // move constructor
-    cfg_t(cfg_t&& rhs) = default;
+    cfg_t(cfg_t &&rhs) = default;
     // move assignment operator
-    cfg_t& operator=(cfg_t&& rhs) = default;
+    cfg_t &operator=(cfg_t &&rhs) = default;
   };
 
+  cfg_t m_cfg{};
 
-  cfg_t m_cfg;
-
-  bool m_checkReady;
-  prc_step_t  m_step;
-  bool m_autoreadyFlag;
-  ap_err_st::err_e m_apErr;
+  bool m_checkReady{};
+  prc_step_t m_step{};
+  bool m_autoreadyFlag{};
+  ap_err_st::err_e m_apErr{};
   /****************************************************
    *  Constructor
    ****************************************************/
 public:
-  cnAuto() :m_cfg{}, m_checkReady{}
-    , m_step{}, m_autoreadyFlag{}
-    , m_apErr{} {
-
-  };
-
-  virtual  ~cnAuto() {};
+  cnAuto() = default;
+  ~cnAuto() = default;
 
   /****************************************************
    *  func
    ****************************************************/
-  inline void Init(cnAuto::cfg_t& cfg) {
+  inline void Init(cnAuto::cfg_t &cfg)
+  {
     m_cfg = cfg;
-    LOG_PRINT("Init Success");
+    LOG_PRINT("[OK] Init Success!");
   }
 
-  inline enOp::mode_e GetOPMode() {
+  inline enOp::mode_e GetOPMode()
+  {
     return m_cfg.ptr_op->GetMode();
   }
 
-  inline enOp::status_e GetOPStatus() {
+  inline enOp::status_e GetOPStatus()
+  {
     return m_cfg.ptr_op->GetStatus();
   }
-  inline void SetOPMode(enOp::mode_e mode) {
+  inline void SetOPMode(enOp::mode_e mode)
+  {
     m_cfg.ptr_op->SetMode(mode);
   }
 
-  inline void SetOPStatus(enOp::status_e status) {
+  inline void SetOPStatus(enOp::status_e status)
+  {
+    //LOG_PRINT("SetOPStatus - status[%d] ", status);
     m_cfg.ptr_op->SetStatus(status);
   }
 
-  inline void StartSw() {
+  inline void StartSw()
+  {
     UiStartSw();
   }
 
-  inline void StopSw() {
+  inline void StopSw()
+  {
     SetOPMode(enOp::mode_e::STOP);
-    if (m_cfg.ptr_apReg->state_reg.system_origin_cplt) //GetOPStatus() !=(enOp::status_e::INIT )
+    if (m_cfg.ptr_apReg->state_reg.system_origin_cplt) // GetOPStatus() !=(enOp::status_e::INIT )
     {
       SetOPStatus(enOp::status_e::STEP_STOP);
     }
@@ -109,23 +108,32 @@ public:
     m_checkReady = false;
   }
 
-  inline void ResetSw() {
+  inline void ResetSw()
+  {
+    //logPrintf("ResetSw\n");
     StopSw();
     m_cfg.ptr_apReg->ClearAlarmState();
   }
 
-  inline void PauseStop() {
-    //m_IsDetectedPauseSensor = true;
+  inline void PauseStop()
+  {
+    // m_IsDetectedPauseSensor = true;
   }
 
-
-  inline bool SetEStop(bool state) {
+  inline bool SetEStop(bool state)
+  {
     m_cfg.ptr_apReg->SetReg_State(ap_reg::EMG_STOP, state);
     return state;
   }
 
-  inline bool IsDetectAreaSensor() {
+  inline bool IsDetectAreaSensor() const
+  {
     return m_cfg.ptr_apReg->state_reg.detect_safe_sensor;
+  }
+
+  inline bool IsRequestSystemInit() const
+  {
+    return m_cfg.ptr_apReg->state_reg.request_initial;
   }
 
 #if 0
@@ -143,13 +151,14 @@ public:
   }
 #endif
 
-  inline void UiStartSw() {
+  inline void UiStartSw()
+  {
     m_autoreadyFlag = true;
     m_checkReady = true;
   }
 
-
-  inline void ThreadJob() {
+  inline void ThreadJob()
+  {
     /*
       check register updates and checked items by op status status.
     */
@@ -159,22 +168,26 @@ public:
       AutoReady();
   }
 
-
-
   inline void doRunStep()
   {
     using state_t = enOp::status_e;
-    //using mode_t = enOp::mode_e;
+    // using mode_t = enOp::mode_e;
     using reg_t = ap_reg::state_e;
-    //enOp* op = m_cfg.ptr_op;
-    ap_reg* reg = m_cfg.ptr_apReg;
+    // enOp* op = m_cfg.ptr_op;
+    ap_reg *reg = m_cfg.ptr_apReg;
 
     enum : uint8_t
     {
-      STEP_INIT, STEP_TODO, STEP_STATUS_INIT, STEP_STATUS_STOP, STEP_STATUS_RUN_READY,
-      STEP_STATUS_RUN, STEP_STATUS_ERR_STOP, STEP_TIMEOUT, STEP_END
+      STEP_INIT,
+      STEP_TODO,
+      STEP_STATUS_INIT,
+      STEP_STATUS_STOP,
+      STEP_STATUS_RUN_READY,
+      STEP_STATUS_RUN,
+      STEP_STATUS_ERR_STOP,
+      STEP_TIMEOUT,
+      STEP_END
     };
-
 
     switch (m_step.GetStep())
     {
@@ -188,7 +201,7 @@ public:
       ######################################################*/
     case STEP_TODO:
     {
-      if (reg->state_reg.system_origin_cplt == false)
+      if (reg->state_reg.system_origin_cplt == false && GetOPStatus() != enOp::INIT)
       {
         SetOPStatus(enOp::INIT);
       }
@@ -229,7 +242,7 @@ public:
 
     case STEP_STATUS_INIT:
     {
-      if (reg->state_reg.system_origin_cplt)
+      if (reg->state_reg.system_origin_cplt && GetOPStatus() != enOp::STEP_STOP)
         SetOPStatus(enOp::STEP_STOP);
 
       m_step.SetStep(STEP_TODO);
@@ -268,85 +281,75 @@ public:
 
     default:
       break;
-    }//switch (m_step.GetStep())
+    } // switch (m_step.GetStep())
   }
 
   // Check the automatic operating conditions of the module
-  inline bool IsRunCondition() {
-    ap_reg* ap_reg = m_cfg.ptr_apReg;
+  inline bool IsRunCondition()
+  {
+    ap_reg *ap_reg = m_cfg.ptr_apReg;
     using err_t = ap_err_st::err_e;
     if (ap_reg->state_reg.emg_stop)
     {
       m_apErr = err_t::emg_stop;
-        logPrintf("cnAuto checkStartRunCondition  ap_reg->state_reg.emg_stop  \n");
+      logPrintf("cnAuto checkStartRunCondition  ap_reg->state_reg.emg_stop  \n");
       return false;
     }
+    /*
     else
     {
       m_apErr = err_t::no_error;
     }
 
     return true;
-
-
-#if 0
-    cnAuto::state_e ret = cnAuto::state_e::ready;
-    MCU_REG::ap_reg* ap_reg = m_cfg.p_apReg;
-
-    if (ap_reg->state_reg.emg_stop)
-    {
-      logPrintf("cnAuto checkStartRunCondition  ap_reg->state_reg.emg_stop  \n");
-      return cnAuto::state_e::emg_stop;
-    }
-
-    if (m_cfg.p_motors->IsAlarmState())
-    {
-      logPrintf("cnAuto checkStartRunCondition  m_cfg.p_motors->IsAlarmState()  \n");
-      return cnAuto::state_e::axis_state_err;
-    }
+    */
 
     if (ap_reg->state_reg.alarm_status)
     {
-      m_errCnt = 0;
-
       if (ap_reg->state_reg.auto_stop)
       {
         logPrintf("cnAuto checkStartRunCondition cnAuto::state_e::error_stop \n");
-        ret = cnAuto::state_e::error_stop;
+        m_apErr = err_t::error_stop; // cnAuto::state_e::error_stop;
+        return false;
       }
       else if (ap_reg->option_reg.not_use_motor ? false : (ap_reg->state_reg.motor_on == false))
       {
         logPrintf("cnAuto checkStartRunCondition cnAuto::state_e::servo_on_err \n");
-        ret = cnAuto::state_e::servo_on_err;
+        m_apErr = err_t::servo_on_err;
+        return false;
       }
       else if (ap_reg->state_reg.system_origin_cplt == false)
       {
         logPrintf("cnAuto checkStartRunCondition cnAuto::state_e::axis_origin_err \n");
-        ret = cnAuto::state_e::axis_origin_err;
+        m_apErr = err_t::axis_origin_err;
+        return false;
       }
       else
       {
         logPrintf("cnAuto checkStartRunCondition cnAuto::state_e::mcu_unit_err \n");
-        ret = cnAuto::state_e::mcu_unit_err;
+        m_apErr = err_t::mcu_unit_err;
+        return false;
       }
     }
+    else
+    {
+    }
 
-#endif
+    return true;
   }
 
-  inline bool IsModeAuto() {
-    if(m_cfg.ptr_apReg->state_reg.factory_initial)
+  inline bool IsModeAuto()
+  {
       return false;
-    return m_cfg.ptr_io->m_in.in_mode_key_auto
-        || m_cfg.ptr_apReg->option_reg.mode_auto;
   }
 
   // condition for auto-run
-  inline int AutoReady() {
+  inline int AutoReady()
+  {
     using state_t = enOp::status_e;
     using mode_t = enOp::mode_e;
-    enOp* op = m_cfg.ptr_op;
-    ap_reg* reg = m_cfg.ptr_apReg;
+    enOp *op = m_cfg.ptr_op;
+    ap_reg *reg = m_cfg.ptr_apReg;
     if (IsRunCondition())
     {
       if (m_autoreadyFlag)
@@ -379,16 +382,17 @@ public:
     return 0;
   }
 
-
-  inline void AlarmAuto(ap_err_st::err_e err) {
+  inline void AlarmAuto(ap_err_st::err_e err)
+  {
     using err_t = ap_err_st::err_e;
-    ap_reg* reg = m_cfg.ptr_apReg;
+
+    // ap_reg* reg = m_cfg.ptr_apReg;
     switch (err)
     {
     case err_t::no_error:
       break;
     case err_t::mcu_unit_err:
-      reg->error_reg.err_test_unit = true;
+      m_cfg.ptr_apReg->error_reg.err_test_unit = true;
       break;
     case err_t::seq_initial_timeout:
       __attribute__((fallthrough));
@@ -402,7 +406,7 @@ public:
     case err_t::axis_state_err:
       __attribute__((fallthrough));
     case err_t::axis_origin_err:
-      reg->error_reg.not_ready_motor = true;
+      m_cfg.ptr_apReg->error_reg.not_ready_motor = true;
       break;
 
     case err_t::axis_start_timeout:
@@ -410,7 +414,7 @@ public:
     case err_t::axis_move_timeout:
       __attribute__((fallthrough));
     case err_t::axis_stop_timeout:
-      reg->error_reg.motor_timeout = true;
+      m_cfg.ptr_apReg->error_reg.motor_timeout = true;
       break;
 
     case err_t::cyl_open_timeout:
@@ -428,58 +432,63 @@ public:
     case err_t::cyl_push_timeout:
       __attribute__((fallthrough));
     case err_t::cyl_pull_timeout:
-         __attribute__((fallthrough));
+      __attribute__((fallthrough));
     case err_t::cyl_timeout:
-      reg->error_reg.cylinder_timeout = true;
+      m_cfg.ptr_apReg->error_reg.cylinder_timeout = true;
       break;
 
     case err_t::vac_deletc_on_timeout:
       __attribute__((fallthrough));
     case err_t::vac_timeout:
-      reg->error_reg.vacuum_timeout = true;
+      m_cfg.ptr_apReg->error_reg.vacuum_timeout = true;
       break;
 
     case err_t::cyl_interlock_State:
-      reg->error_reg.cylinder_interlock = true;
+      m_cfg.ptr_apReg->error_reg.cylinder_interlock = true;
       break;
 
     default:
-      reg->error_reg.not_defined = true;
+      m_cfg.ptr_apReg->error_reg.not_defined = true;
       break;
     }
-    //switch (err)
+    // switch (err)
 
     SetOPStatus(enOp::status_e::ERR_STOP);
+
+    //LOG_PRINT("AlarmAuto - err[%d] ", err);
   }
 
-
-#if 0
-  inline void AlarmAuto(log_dat::head_t* p_head,
-    const char* file,
-    const char* func,
-    const int line,
-    const char* msg)
+  inline void AlarmAuto(log_dat::head_t *ptr_head,
+                        const char *file,
+                        const char *func,
+                        const int line,
+                        const char *msg)
   {
     constexpr int ARG_TBL_CNT_MAX = 10;
     constexpr int FILE_STR_MAX = 40;
     using err_t = ap_err_st::err_e;
-    err_t err = static_cast<err_t>(p_head->error_no);
+    err_t err = static_cast<err_t>(ptr_head->error_no);
 
-    char tmp_str[FILE_STR_MAX] = { 0, };
-    strcpy(tmp_str, file);
-    char* arg_tbl[ARG_TBL_CNT_MAX] = {};
-    uint8_t arg_cnt = trans::SplitArgs(tmp_str, arg_tbl, "/", ARG_TBL_CNT_MAX);
+    char tmp_str[FILE_STR_MAX] = {
+        0,
+    };
 
-    //m_cfg.ptr_apLog->apLogWrite(p_head, "file[%s],func[%s-%d],msg[%d-%d-%s]", arg_tbl[arg_cnt - 1], func, line, p_head->error_no, p_head->obj_id, msg);
-    logPrintf("file[%s],func[%s-%d],msg[%d-%d-%s]  \n", arg_tbl[arg_cnt - 1], func, line, p_head->error_no, p_head->obj_id, msg);
+    size_t source_length = strlen(file);
+    const char *copy_start = nullptr;
+    if (source_length > (FILE_STR_MAX - 1))
+      copy_start = file + (source_length - (FILE_STR_MAX - 1));
+    else
+      copy_start = file;
+
+    strncpy(tmp_str, copy_start, FILE_STR_MAX);
+    char *arg_tbl[ARG_TBL_CNT_MAX] = {};
+    uint8_t arg_cnt = trans::SplitArgs(tmp_str, arg_tbl, "/\\", ARG_TBL_CNT_MAX);
+
+    // m_cfg.ptr_apLog->apLogWrite(p_head, "file[%s],func[%s-%d],msg[%d-%d-%s]", arg_tbl[arg_cnt - 1], func, line, p_head->error_no, p_head->obj_id, msg);
+    LOG_PRINT("file[%s],func[%s-%d],msg[%d-%d-%s]", arg_tbl[arg_cnt - 1], func, line, ptr_head->error_no, ptr_head->obj_id, msg);
+
     AlarmAuto(err);
-
   }
-#endif
-
-
 };
-
-
 
 #endif /* AP__INC_CNAUTO_HPP_ */

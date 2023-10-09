@@ -14,30 +14,60 @@ static void jumpToAddr(uint32_t addr);
 void apInit(void)
 {
   wdgInit();
-  buttonInit();
+  // buttonInit();
+#if 0
+  /* Read GPIO state */
+  uint32_t gpio_state = LL_GPIO_ReadInputPort(boot_i2c1_GPIO_Port);
 
-  if (buttonGetPressed(_DEF_CH1))
+  /* Check GPIO state */
+  if (gpio_state & boot_i2c1_Pin)
   {
-    wdgBegin(2000);
-    jumpToAddr(0x1FFF0000); // Jump To System Bootloader
+    /* GPIO pin is high */
+    jumpToAddr(0x8000800); // Jump To Firmware
   }
   else
   {
-    jumpToAddr(0x8000800); // Jump To Firmware
+    /* GPIO pin is low */
+    wdgBegin(2000);
+    jumpToAddr(0x1FFF0000); // Jump To System Bootloader
   }
+#endif
+
+  {
+    __HAL_RCC_GPIOA_CLK_ENABLE();
+    GPIO_InitTypeDef GPIO_InitStruct = {0};
+    GPIO_InitStruct.Pin = GPIO_PIN_14;
+    GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+    GPIO_InitStruct.Pull = GPIO_PULLUP;
+    HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+  }
+
+  //if (HAL_GPIO_ReadPin(boot_i2c1_GPIO_Port, boot_i2c1_Pin) == GPIO_PIN_RESET)
+  if (HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_14) == GPIO_PIN_RESET)
+  {
+    /* low */
+    HAL_GPIO_WritePin(STATUS_GPIO_Port, STATUS_Pin,GPIO_PIN_RESET);
+
+    const uint32_t stmf030c_addr_sysmem = 0x1FFF0000;
+    const uint32_t wait_download_timeout_ms = 1000*2;
+    wdgBegin(wait_download_timeout_ms);
+    jumpToAddr(stmf030c_addr_sysmem); // Jump To System Bootloaderdr_fw); // Jump To Firmware
+  }
+  else
+  {
+    /* GPIO pin is high */
+    HAL_GPIO_WritePin(STATUS_GPIO_Port, STATUS_Pin,GPIO_PIN_SET);
+    const uint32_t stmf030c_addr_fw = 0x08000800;
+    jumpToAddr(stmf030c_addr_fw);
+
+  }
+
 }
 
 void apMain(void)
 {
   while(1)
   {
-
-   /* LL_GPIO_TogglePin(STATUS_GPIO_Port, STATUS_Pin);
-
-
-    for (volatile int i = 0; i  < 200000; ++i ) {
-
-    }*/
 
   }
 }

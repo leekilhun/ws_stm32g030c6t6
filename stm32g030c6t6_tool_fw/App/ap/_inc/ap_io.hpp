@@ -29,17 +29,17 @@ public:
     in01_busy_sw,
     in02_error_sw,
     in03,
-    in04_l_vac_on,
-    in05_r_vac_on,
+    in04_a_vac_on,
+    in05_b_vac_on,
     in06,
-    in07_l_motor_org, //
+    in07_a_motor_org, //
 
     in10,
     in11,
-    in12_r_motor_org,
+    in12_b_motor_org,
     in13,
-    in14,
-    in15_smotor_org,
+    in14_c_r_motor_org,
+    in15_c_l_motor_org,
     in16,
     in17,
   };
@@ -53,17 +53,17 @@ public:
       volatile unsigned in01_busy_sw : 1;
       volatile unsigned in02_error_sw : 1;
       volatile unsigned in03 : 1;
-      volatile unsigned in04_l_vac_on : 1;
-      volatile unsigned in05_r_vac_on : 1;
+      volatile unsigned in04_a_vac_on : 1;
+      volatile unsigned in05_b_vac_on : 1;
       volatile unsigned in06 : 1;
-      volatile unsigned in07_l_motor_org : 1;
+      volatile unsigned in07_a_motor_org : 1;
 
       volatile unsigned in10 : 1;
       volatile unsigned in11 : 1;
-      volatile unsigned in12_r_motor_org : 1;
+      volatile unsigned in12_b_motor_org : 1;
       volatile unsigned in13 : 1;
-      volatile unsigned in14 : 1;
-      volatile unsigned in15_smotor_org : 1;
+      volatile unsigned in14_c_r_motor_org : 1;
+      volatile unsigned in15_c_l_motor_org : 1;
       volatile unsigned in16 : 1;
       volatile unsigned in17 : 1;
     };
@@ -74,21 +74,20 @@ public:
     out00_ready_lamp = AP_DEF_START_OUT_ADDR,
     out01_busy_lamp,
     out02_error_lamp,
-    out03_l_vac_suction,
-    out04_l_vac_blow,
-    out05_r_vac_suction,
-    out06_r_vac_blow,
-    out07_l_motor_enable,
+    out03_a_vac_suction,
+    out04_a_vac_blow,
+    out05_b_vac_suction,
+    out06_b_vac_blow,
+    out07_a_motor_enable,
 
-    out10_l_motor_direction, // reserved
-    out11_l_motor_pulse,
-    out12_r_motor_enable,
-    out13_r_motor_direction,
-    out14_r_motor_pulse,
-    out15_smotor_enalble,
-    out16_smotor_direction,
-    out17_smotor_pulse,
-
+    out10_a_motor_direction, // reserved
+    out11_a_motor_pulse,
+    out12_b_motor_enable,
+    out13_b_motor_direction,
+    out14_b_motor_pulse,
+    out15_c_motor_enalble,
+    out16_c_motor_direction,
+    out17_c_motor_pulse,
   };
 
   union out_u
@@ -99,20 +98,20 @@ public:
       volatile unsigned out00_ready_lamp : 1;
       volatile unsigned out01_busy_lamp : 1;
       volatile unsigned out02_error_lamp : 1;
-      volatile unsigned out03_l_vac_suction : 1;
-      volatile unsigned out04_l_vac_blow : 1;
-      volatile unsigned out05_r_vac_suction : 1;
-      volatile unsigned out06_r_vac_blow : 1;
-      volatile unsigned out07_l_motor_enable : 1;
+      volatile unsigned out03_a_vac_suction : 1;
+      volatile unsigned out04_a_vac_blow : 1;
+      volatile unsigned out05_b_vac_suction : 1;
+      volatile unsigned out06_b_vac_blow : 1;
+      volatile unsigned out07_a_motor_enable : 1;
 
-      volatile unsigned out10_l_motor_direction : 1;
-      volatile unsigned out11_l_motor_pulse : 1;
-      volatile unsigned out12_r_motor_enable : 1;
-      volatile unsigned out13_r_motor_direction : 1;
-      volatile unsigned out14_r_motor_pulse : 1;
-      volatile unsigned out15_smotor_enalble : 1;
-      volatile unsigned out16_smotor_direction : 1;
-      volatile unsigned out17_smotor_pulse : 1;
+      volatile unsigned out10_a_motor_direction : 1;
+      volatile unsigned out11_a_motor_pulse : 1;
+      volatile unsigned out12_b_motor_enable : 1;
+      volatile unsigned out13_b_motor_direction : 1;
+      volatile unsigned out14_b_motor_pulse : 1;
+      volatile unsigned out15_c_motor_enalble : 1;
+      volatile unsigned out16_c_motor_direction : 1;
+      volatile unsigned out17_c_motor_pulse : 1;
     };
   };
 
@@ -122,17 +121,17 @@ public:
     struct
     {
       volatile unsigned start_sw : 1;
-      volatile unsigned stop_sw : 1;
       volatile unsigned reset_sw : 1;
+      volatile unsigned stop_sw : 1;
       volatile unsigned estop_Sw : 1;
       volatile unsigned in04 : 1;
       volatile unsigned in05 : 1;
       volatile unsigned in06 : 1;
       volatile unsigned in07 : 1;
 
-      volatile unsigned start_lamp : 1;
-      volatile unsigned stop_lamp : 1;
-      volatile unsigned reset_lamp : 1;
+      volatile unsigned ready_lamp : 1;
+      volatile unsigned busy_lamp : 1;
+      volatile unsigned error_lamp : 1;
       volatile unsigned out03 : 1;
       volatile unsigned out04 : 1;
       volatile unsigned out05 : 1;
@@ -141,11 +140,11 @@ public:
     };
   };
 
-  volatile in_u m_in;
-  volatile out_u m_out;
-  volatile sysio_u m_sysio;
+  volatile in_u m_in{};
+  volatile out_u m_out{};
+  volatile sysio_u m_sysio{};
 
-  uint8_t m_errCnt;
+  uint8_t m_errCnt{};
 
 public:
   ap_io() : m_in{}, m_out{}, m_sysio{}, m_errCnt{}
@@ -155,17 +154,31 @@ public:
     ap_io_mutex_id = osMutexCreate(osMutex(ap_io_mutex_id));
 #endif
   }
-  virtual ~ap_io() {}
+  ~ap_io() {}
 
   inline int Init()
   {
-    LOG_PRINT("Init Success!");
+    LOG_PRINT("[OK] Init Success!");
     return ERROR_SUCCESS;
   }
 
   /*inline void assignObj(iio* p_io){
     pIo = p_io;
  }*/
+
+   //Update information that has changed compared to previous data
+  inline void SetOutputReg(uint32_t reg, uint8_t bank = 0)
+  {
+    uint32_t x_reg = reg ^ m_out.data;
+
+    for(uint8_t i = 0 ; i < 32; i++)
+    {
+      if((x_reg >>(i))&1)
+      {
+        SetGpioOut((out_e)(i+AP_DEF_START_OUT_ADDR),((reg>>(i))&1));
+      }
+    }
+  }
 
   inline int SetGpioOut(out_e out_idx, bool onoff = true)
   {
@@ -185,43 +198,43 @@ public:
     case out02_error_lamp:
       HAL_GPIO_WritePin(IO_OUT_2_GPIO_Port, IO_OUT_2_Pin, state);
       break;
-    case out03_l_vac_suction:
+    case out03_a_vac_suction:
       HAL_GPIO_WritePin(IO_OUT_3_GPIO_Port, IO_OUT_3_Pin, state);
       break;
-    case out04_l_vac_blow:
+    case out04_a_vac_blow:
       HAL_GPIO_WritePin(IO_OUT_4_GPIO_Port, IO_OUT_4_Pin, state);
       break;
-    case out05_r_vac_suction:
+    case out05_b_vac_suction:
       HAL_GPIO_WritePin(IO_OUT_5_GPIO_Port, IO_OUT_5_Pin, state);
       break;
-    case out06_r_vac_blow:
+    case out06_b_vac_blow:
       HAL_GPIO_WritePin(IO_OUT_6_GPIO_Port, IO_OUT_6_Pin, state);
       break;
-    case out07_l_motor_enable:
+    case out07_a_motor_enable:
       HAL_GPIO_WritePin(IO_OUT_7_GPIO_Port, IO_OUT_7_Pin, state);
       break;
-    case out10_l_motor_direction:
+    case out10_a_motor_direction:
       HAL_GPIO_WritePin(IO_OUT_8_GPIO_Port, IO_OUT_8_Pin, state);
       break;
-    case out11_l_motor_pulse:
+    case out11_a_motor_pulse:
       HAL_GPIO_WritePin(IO_OUT_9_GPIO_Port, IO_OUT_9_Pin, state);
       break;
-    case out12_r_motor_enable:
+    case out12_b_motor_enable:
       HAL_GPIO_WritePin(IO_OUT_10_GPIO_Port, IO_OUT_10_Pin, state);
       break;
-    case out13_r_motor_direction:
+    case out13_b_motor_direction:
       HAL_GPIO_WritePin(IO_OUT_11_GPIO_Port, IO_OUT_11_Pin, state);
       break;
-    case out14_r_motor_pulse:
+    case out14_b_motor_pulse:
       HAL_GPIO_WritePin(IO_OUT_12_GPIO_Port, IO_OUT_12_Pin, state);
       break;
-    case out15_smotor_enalble:
+    case out15_c_motor_enalble:
       HAL_GPIO_WritePin(IO_OUT_13_GPIO_Port, IO_OUT_13_Pin, state);
       break;
-    case out16_smotor_direction:
+    case out16_c_motor_direction:
       HAL_GPIO_WritePin(IO_OUT_14_GPIO_Port, IO_OUT_14_Pin, state);
       break;
-    case out17_smotor_pulse:
+    case out17_c_motor_pulse:
       HAL_GPIO_WritePin(IO_OUT_15_GPIO_Port, IO_OUT_15_Pin, state);
       break;
     default:

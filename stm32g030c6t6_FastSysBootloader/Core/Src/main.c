@@ -1,20 +1,20 @@
 /* USER CODE BEGIN Header */
 /**
-  ******************************************************************************
-  * @file           : main.c
-  * @brief          : Main program body
-  ******************************************************************************
-  * @attention
-  *
-  * Copyright (c) 2023 STMicroelectronics.
-  * All rights reserved.
-  *
-  * This software is licensed under terms that can be found in the LICENSE file
-  * in the root directory of this software component.
-  * If no LICENSE file comes with this software, it is provided AS-IS.
-  *
-  ******************************************************************************
-  */
+ ******************************************************************************
+ * @file           : main.c
+ * @brief          : Main program body
+ ******************************************************************************
+ * @attention
+ *
+ * Copyright (c) 2023 STMicroelectronics.
+ * All rights reserved.
+ *
+ * This software is licensed under terms that can be found in the LICENSE file
+ * in the root directory of this software component.
+ * If no LICENSE file comes with this software, it is provided AS-IS.
+ *
+ ******************************************************************************
+ */
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
@@ -90,6 +90,30 @@ int main(void)
   MX_IWDG_Init();
   /* USER CODE BEGIN 2 */
   apInit();
+  /* Read GPIO state */
+
+
+
+
+#if 0
+  uint32_t gpio_state = LL_GPIO_ReadInputPort(boot_i2c1_GPIO_Port);
+
+  /* Check GPIO state */
+  if (gpio_state & boot_i2c1_Pin)
+  {
+    /* GPIO pin is high */
+    //jumpToAddr(0x8000800); // Jump To Firmware
+    led_ms = 500;
+  }
+  else
+  {
+    /* GPIO pin is low */
+    //wdgBegin(2000);
+    //jumpToAddr(0x1FFF0000); // Jump To System Bootloader
+    led_ms = 1000;
+  }
+
+#endif
   apMain();
   /* USER CODE END 2 */
 
@@ -101,6 +125,13 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+    //LL_GPIO_TogglePin(status_GPIO_Port, status_Pin);
+
+//    for (volatile int i = 0; i  < (led_ms*1000); ++i )
+//    {
+//
+//    }
+
   }
   /* USER CODE END 3 */
 }
@@ -173,13 +204,13 @@ static void MX_IWDG_Init(void)
 
   /* USER CODE END IWDG_Init 1 */
   hiwdg.Instance = IWDG;
-  hiwdg.Init.Prescaler = IWDG_PRESCALER_4;
+  hiwdg.Init.Prescaler = IWDG_PRESCALER_256;
   hiwdg.Init.Window = 4095;
   hiwdg.Init.Reload = 4095;
-  if (HAL_IWDG_Init(&hiwdg) != HAL_OK)
-  {
-    Error_Handler();
-  }
+  //if (HAL_IWDG_Init(&hiwdg) != HAL_OK)
+  //{
+  //  Error_Handler();
+  //}
   /* USER CODE BEGIN IWDG_Init 2 */
 
   /* USER CODE END IWDG_Init 2 */
@@ -193,20 +224,31 @@ static void MX_IWDG_Init(void)
   */
 static void MX_GPIO_Init(void)
 {
-  LL_GPIO_InitTypeDef GPIO_InitStruct = {0};
+  GPIO_InitTypeDef GPIO_InitStruct = {0};
 /* USER CODE BEGIN MX_GPIO_Init_1 */
 /* USER CODE END MX_GPIO_Init_1 */
 
   /* GPIO Ports Clock Enable */
-  LL_IOP_GRP1_EnableClock(LL_IOP_GRP1_PERIPH_GPIOF);
-  LL_IOP_GRP1_EnableClock(LL_IOP_GRP1_PERIPH_GPIOA);
-  LL_IOP_GRP1_EnableClock(LL_IOP_GRP1_PERIPH_GPIOB);
+  __HAL_RCC_GPIOC_CLK_ENABLE();
+  __HAL_RCC_GPIOF_CLK_ENABLE();
+  __HAL_RCC_GPIOA_CLK_ENABLE();
+  __HAL_RCC_GPIOB_CLK_ENABLE();
 
-  /**/
-  GPIO_InitStruct.Pin = LL_GPIO_PIN_7;
-  GPIO_InitStruct.Mode = LL_GPIO_MODE_INPUT;
-  GPIO_InitStruct.Pull = LL_GPIO_PULL_NO;
-  LL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(STATUS_GPIO_Port, STATUS_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin : STATUS_Pin */
+  GPIO_InitStruct.Pin = STATUS_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(STATUS_GPIO_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : boot_i2c1_Pin */
+  GPIO_InitStruct.Pin = boot_i2c1_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(boot_i2c1_GPIO_Port, &GPIO_InitStruct);
 
 /* USER CODE BEGIN MX_GPIO_Init_2 */
 /* USER CODE END MX_GPIO_Init_2 */

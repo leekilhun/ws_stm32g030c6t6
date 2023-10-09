@@ -1,66 +1,65 @@
 /*
  * enOp.hpp
  *
- *  Created on: 2023. 8. 10.
+ *  Created on: 2023. 6. 10.
  *      Author: gns2l
  */
 
 #ifndef AP__INC_ENOP_HPP_
 #define AP__INC_ENOP_HPP_
 
-
-
+#include "ap_def.h"
 
 struct enOp
 {
-  enum mode_e
+  enum mode_e :uint8_t
   {
-    READY,
+    READY = 0x10,
     AUTORUN,
     STOP,
     DRY_RUN,
   };
 
-  enum status_e
+  enum status_e :uint8_t
   {
-    INIT,
+    INIT = 0x20,
     ERR_STOP,
     STEP_STOP,
     RUN_READY,
     RUN,
   };
 
-  enum panel_e
+  enum panel_e :uint8_t
   {
-    SW_START,
+    SW_START = 0x30,
     SW_STOP,
     SW_RESET,
     SW_ESTOP,
-    SW_MAX
   };
 
-  enum lamp_e
+  enum lamp_e :uint8_t
   {
-    LAMP_START,
-    LAMP_STOP,
-    LAMP_RESET,
+    LAMP_READY = 0x40,
+    LAMP_BUSY,
+    LAMP_ERROR,
   };
 
   struct cfg_t
   {
-    ap_io * ptr_mcu_io{};
+  	ap_reg* ptr_mcu_reg{};
+  	ap_io * ptr_mcu_io{};
 
-    uint8_t sw_pin_start{};
-    uint8_t sw_pin_stop{};
-    uint8_t sw_pin_reset{};
-    uint8_t sw_pin_estop{};
+    enLed* ptr_led_status{};
+    enLed* ptr_led_op_g{};
+    enLed* ptr_led_op_y{};
+    enLed* ptr_led_op_r{};
 
+    enBtn* ptr_btn_start{};
+    enBtn* ptr_btn_stop{};
+    enBtn* ptr_btn_reset{};
+    enBtn* ptr_btn_estop{};
 
-    uint8_t lamp_pin_start{};
-    uint8_t lamp_pin_stop{};
-    uint8_t lamp_pin_reset{};
-
-    cfg_t() = default;
+  	cfg_t() = default;
 
     // copy constructor
     cfg_t(const cfg_t& rhs) = default;
@@ -79,9 +78,9 @@ struct enOp
 
 public:
   enOp() : m_status(enOp::status_e::INIT), m_mode (enOp::mode_e::STOP){ }
-  virtual ~enOp(){}
+  ~enOp(){}
   inline int Init(enOp::cfg_t& cfg){
-    LOG_PRINT("Init Success!");
+    LOG_PRINT("[OK] Init Success!");
     m_cfg = cfg;
     return 0;
   }
@@ -99,76 +98,45 @@ public:
   }
 
   inline void SetMode(enOp::mode_e md){
-    m_mode = md;
-  }
+  	m_mode = md;
+  }  
 
 
-  inline void UpdateState(){
-    #if 0
-    enum{in, out, _max};
-    std::array<uint8_t, _max> data {};
-
-    uint8_t gpio {};
-    gpio |= gpioPinRead(m_cfg.sw_pin_start) << 0;
-    gpio |= gpioPinRead(m_cfg.sw_pin_stop)  << 1;
-    gpio |= gpioPinRead(m_cfg.sw_pin_reset) << 2;
-    gpio |= gpioPinRead(m_cfg.sw_pin_estop) << 3;
-    data[in] = gpio;
-
-    gpio = 0x00;
-    gpio |= gpioPinRead(m_cfg.lamp_pin_start) << 0;
-    gpio |= gpioPinRead(m_cfg.lamp_pin_stop)  << 1;
-    gpio |= gpioPinRead(m_cfg.lamp_pin_reset) << 2;
-    data[out] = gpio;
-
-    m_cfg.ptr_mcu_io->m_sysio.system_io = (uint16_t)((uint16_t)data[in]<<0 | (uint16_t)data[out]<<8) ;
-    #endif
-  }
-#if 0
-  inline bool GetPressed(enOp::panel_e op_sw){
-    switch (op_sw)
+  inline void LampOnOff(lamp_e lamp, bool state = true)
+  {
+    switch (lamp)
     {
-      case enOp::panel_e::SW_START:   return gpioPinRead(m_cfg.sw_pin_start);
-      case enOp::panel_e::SW_STOP:    return gpioPinRead(m_cfg.sw_pin_stop);
-      case enOp::panel_e::SW_RESET:   return gpioPinRead(m_cfg.sw_pin_reset);
-      case enOp::panel_e::SW_ESTOP:   return !gpioPinRead(m_cfg.sw_pin_estop); //reverse
-      default:        return false;
-    }
-  }
-
-  inline void LampOnOff(lamp_e lamp, bool state = true){
-    switch (lamp) {
-      case LAMP_START:
-        gpioPinWrite(m_cfg.lamp_pin_start, state);
+    case LAMP_READY:
+        state ? m_cfg.ptr_led_op_g->On() : m_cfg.ptr_led_op_g->Off();
         break;
-      case LAMP_STOP:
-        gpioPinWrite(m_cfg.lamp_pin_stop, state);
+    case LAMP_BUSY:
+        state ? m_cfg.ptr_led_op_y->On() : m_cfg.ptr_led_op_y->Off();
         break;
-      case LAMP_RESET:
-        gpioPinWrite(m_cfg.lamp_pin_reset, state);
+    case LAMP_ERROR:
+        state ? m_cfg.ptr_led_op_r->On() : m_cfg.ptr_led_op_r->Off();
         break;
-      default:
+    default:
         break;
     };
   }
 
   inline void LampToggle(lamp_e lamp){
     switch (lamp) {
-      case LAMP_START:
-        gpioPinToggle(m_cfg.lamp_pin_start);
+      case LAMP_READY:
+      	m_cfg.ptr_led_op_g->Toggle();
         break;
-      case LAMP_STOP:
-        gpioPinToggle(m_cfg.lamp_pin_stop);
+      case LAMP_BUSY:
+      	m_cfg.ptr_led_op_y->Toggle();
         break;
-      case LAMP_RESET:
-        gpioPinToggle(m_cfg.lamp_pin_reset);
+      case LAMP_ERROR:
+      	m_cfg.ptr_led_op_r->Toggle();
         break;
       default:
         break;
     };
   }
 
- #endif
+
 };
 
 

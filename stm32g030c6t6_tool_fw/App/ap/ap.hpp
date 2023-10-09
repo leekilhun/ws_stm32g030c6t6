@@ -22,22 +22,31 @@
 
 /* ap object*/
 #include "ap_utils.hpp"
-
+#include "ap_dat.hpp"
+#include "ap_log.hpp"
 
 /* ap object */
 /* register -> communication -> basic unit(engine) -> combined unit(engine) -> control */
 //register + io_manager
 //basic
+#include "ap_reg.hpp"
 #include "ap_io.hpp"
 
 #include "uart_cmd.hpp"
 
-//control
+// engine
+#include "enBtn.hpp"
+#include "enLed.hpp"
 #include "enOp.hpp"
 #include "enStepMotor.hpp"
 
+
+//control
+#include "cnAuto.hpp"
+#include "cnTasks.hpp"
+
 //machine test
-//api
+#include "api_cmd.hpp"
 
 
 

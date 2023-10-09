@@ -3,11 +3,14 @@ cmake_minimum_required(VERSION 3.12)
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/tools")
 include(arm-none-eabi-gcc)
 
-set(PRJ_NAME stm32g030c6t6_cube_io_osc)
+set(PRJ_NAME stm32g030c6t6_tool_fw)
 
 project(${PRJ_NAME}
   LANGUAGES ASM C CXX
 )
+
+set(CMAKE_CXX_STANDARD 17)
+
 set(EXECUTABLE ${PRJ_NAME}.elf)
 set(LINKER_FILE ${CMAKE_SOURCE_DIR}/STM32G030C6TX_FLASH.ld)
 
@@ -46,7 +49,7 @@ add_executable(${EXECUTABLE}
 target_compile_definitions(${EXECUTABLE} PRIVATE
   -DSTM32G030xx
   #-D_USE_HW_RTOS
-  #-DUSER_VECT_TAB_ADDRESS
+  -DUSER_VECT_TAB_ADDRESS
   -DDEBUG
   )
 
@@ -75,31 +78,49 @@ target_include_directories(${EXECUTABLE} PRIVATE
 
 
 
-target_compile_options(${EXECUTABLE} PRIVATE
-  -mcpu=cortex-m0plus
-  -mthumb
+target_compile_options(${EXECUTABLE} PRIVATE $<$<COMPILE_LANGUAGE:CXX>:
+    -mcpu=cortex-m0plus 
+    -std=gnu++17 
+    -g3 
+    -Os 
+    -ffunction-sections 
+    -fdata-sections 
+    -fno-exceptions 
+    -fno-rtti 
+    -fno-use-cxa-atexit 
+    -Wall 
+    -fstack-usage 
+    --specs=nano.specs 
+    -mfloat-abi=soft 
+    -mthumb
+    >
+    )
 
-  #-mfpu=fpv4-sp-d16
-  -mfloat-abi=soft
-
-  -fdata-sections
-  -ffunction-sections
-
-  -Wall
-  -Os
-  -g3
-  )
-  
+target_compile_options(${EXECUTABLE} PRIVATE $<$<COMPILE_LANGUAGE:C>:
+    -mcpu=cortex-m0plus 
+    -std=gnu11 
+    -g3 
+    -Os 
+    -ffunction-sections 
+    -fdata-sections 
+    -Wall 
+    -fstack-usage 
+    --specs=nano.specs 
+    -mfloat-abi=soft 
+    -mthumb
+    >
+    )  
   
 
 target_link_options(${EXECUTABLE} PRIVATE
 -T${LINKER_FILE}
 -mcpu=cortex-m0plus
+
 -mthumb
 #-mfpu=fpv4-sp-d16
 -mfloat-abi=soft
 -specs=nano.specs
-#-specs=nosys.specs 
+-specs=nosys.specs 
 -lc
 -lm
 -Wl,-Map=${PROJECT_NAME}.map,--cref

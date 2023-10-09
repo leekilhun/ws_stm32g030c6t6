@@ -66,6 +66,10 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
+#define STATUS_Pin GPIO_PIN_15
+#define STATUS_GPIO_Port GPIOC
+#define boot_i2c1_Pin GPIO_PIN_6
+#define boot_i2c1_GPIO_Port GPIOB
 
 /* USER CODE BEGIN Private defines */
 

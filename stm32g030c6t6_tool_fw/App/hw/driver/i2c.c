@@ -60,8 +60,7 @@ typedef struct
 
 static i2c_tbl_t i2c_tbl[I2C_MAX_CH] =
     {
-        { &hi2c1, GPIOB, GPIO_PIN_8,  GPIOB, GPIO_PIN_9},
-        { &hi2c2, GPIOB, GPIO_PIN_13,  GPIOB, GPIO_PIN_14}
+        { &hi2c1, GPIOB, GPIO_PIN_6,  GPIOB, GPIO_PIN_7}
     };
 
 static const uint32_t i2c_freq_tbl[] =
