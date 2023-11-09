@@ -8,7 +8,7 @@
 #ifndef AP__INC_ENCYL_HPP_
 #define AP__INC_ENCYL_HPP_
 
-#include "ap_def.h"
+#include "ap_def.hpp"
 
 #ifdef _USE_APP_ENCYL
 

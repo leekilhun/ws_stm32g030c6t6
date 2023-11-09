@@ -5,9 +5,12 @@
  *      Author: gns2l
  */
 
+#pragma once
 #ifndef AP__INC_UART_CMD_HPP_
 #define AP__INC_UART_CMD_HPP_
 
+
+#include "ap_def.hpp"
 
 /*
 

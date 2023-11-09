@@ -5,10 +5,12 @@
  *      Author: gns2l
  */
 
+#pragma once
 #ifndef AP__INC_AP_UTILS_HPP_
 #define AP__INC_AP_UTILS_HPP_
 
 
+#include "ap_def.hpp"
 
 
 namespace UTL

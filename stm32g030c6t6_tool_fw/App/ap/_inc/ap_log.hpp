@@ -5,12 +5,13 @@
  *      Author: gns2.lee
  */
 
+#pragma once
 #ifndef SRC_AP_AP_LOG_HPP_
 #define SRC_AP_AP_LOG_HPP_
 
 
 
-#include "ap_def.h"
+#include "ap_def.hpp"
 
 #ifdef _USE_HW_RTOS
 #define AP_LOG_LOCK_BEGIN osMutexWait(ap_log_mutex_id, osWaitForever)

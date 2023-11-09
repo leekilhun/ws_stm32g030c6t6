@@ -5,11 +5,11 @@
  *      Author: gns2l
  */
 
+#pragma once
 #ifndef AP__INC_CNAUTO_HPP_
 #define AP__INC_CNAUTO_HPP_
 
-#include "ap_def.h"
-
+#include "ap_def.hpp"
 
 #define AUTO_ALARM(head, msg) AlarmAuto(head, (__FILE__), __FUNCTION__, __LINE__, msg)
 
@@ -62,10 +62,11 @@ public:
   /****************************************************
    *  func
    ****************************************************/
-  inline void Init(cnAuto::cfg_t &cfg)
+  inline errno_t Init(cnAuto::cfg_t &cfg)
   {
     m_cfg = cfg;
     LOG_PRINT("[OK] Init Success!");
+    return ERROR_SUCCESS;
   }
 
   inline enOp::mode_e GetOPMode()

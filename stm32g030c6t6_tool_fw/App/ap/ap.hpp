@@ -5,6 +5,7 @@
  *      Author: gns2l
  */
 
+#pragma once
 #ifndef INCLUDE_AP_HPP_
 #define INCLUDE_AP_HPP_
 
@@ -16,9 +17,7 @@
 */
 
 
-#include "ap_def.h"
-
-#include "def_obj.hpp"
+#include "ap_def.hpp"
 
 /* ap object*/
 #include "ap_utils.hpp"
@@ -32,7 +31,8 @@
 #include "ap_reg.hpp"
 #include "ap_io.hpp"
 
-#include "uart_cmd.hpp"
+#include "iic_cmd.hpp"
+//#include "uart_cmd.hpp"
 
 // engine
 #include "enBtn.hpp"
@@ -42,11 +42,12 @@
 
 
 //control
+#include "cnMotors.hpp"
 #include "cnAuto.hpp"
 #include "cnTasks.hpp"
 
 //machine test
-#include "api_cmd.hpp"
+//#include "api_cmd.hpp"
 
 
 

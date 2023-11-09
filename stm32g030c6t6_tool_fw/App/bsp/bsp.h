@@ -15,10 +15,11 @@ extern "C" {
 #endif
 
 
-
   bool bspInit(void);
   void bspDeInit(void);
-  void delay(uint32_t time_ms);
+  void delay(uint32_t time_ms);  
+  void delay_us(uint32_t us);
+  
   uint32_t millis(void);
   void logPrintf(const char *fmt, ...);
   void logView(const char* file, const char* func, const int line, const char* fmt, ...);

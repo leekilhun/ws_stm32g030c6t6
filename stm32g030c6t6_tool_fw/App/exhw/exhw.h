@@ -17,6 +17,7 @@ extern "C" {
 
 #include "at24c64.h"
 #include "pca8575pw.h"
+#include "iicomm_dev.h"
 
 
 bool exhwInit(void);

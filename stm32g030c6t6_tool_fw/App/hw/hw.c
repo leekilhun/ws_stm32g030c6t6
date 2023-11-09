@@ -42,9 +42,12 @@ bool hwInit(void)
   logPrintf("Core Clock    \t\t: %d Mhz\r\n", SystemCoreClock/1000000);
 #endif
 
-
 #ifdef _USE_HW_I2C
   ret &= i2cInit();
+#endif
+
+#ifdef _USE_HW_IIC_S
+  ret &= iicsInit();
 #endif
 
 #ifdef _USE_HW_SWTIMER

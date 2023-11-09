@@ -5,9 +5,11 @@
  *      Author: gns2l
  */
 
+#pragma once
 #ifndef AP__INC_ENMOTOR_MOONS_HPP_
 #define AP__INC_ENMOTOR_MOONS_HPP_
 
+#include "ap_def.hpp"
 
 namespace MOTOR
 {

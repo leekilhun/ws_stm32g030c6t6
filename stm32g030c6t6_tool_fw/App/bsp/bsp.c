@@ -13,7 +13,6 @@
 
 bool bspInit(void)
 {
-
   return true;
 }
 
@@ -36,6 +35,17 @@ void delay(uint32_t time_ms)
 {
   HAL_Delay(time_ms);
 }
+
+void delay_us(uint32_t us)
+{
+  volatile uint32_t i;
+
+  for (i=0; i<us*1000; i++)
+  {
+
+  }
+}
+
 
 
 uint32_t millis(void)

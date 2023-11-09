@@ -5,10 +5,11 @@
  *      Author: gns2l
  */
 
+#pragma once
 #ifndef AP__INC_ENOP_HPP_
 #define AP__INC_ENOP_HPP_
 
-#include "ap_def.h"
+#include "ap_def.hpp"
 
 struct enOp
 {

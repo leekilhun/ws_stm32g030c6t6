@@ -5,8 +5,12 @@
  *      Author: gns2l
  */
 
+#pragma once
 #ifndef AP__INC_AP_IO_HPP_
 #define AP__INC_AP_IO_HPP_
+
+
+#include "ap_def.hpp"
 
 #ifdef _USE_HW_RTOS
 #define AP_IO_LOCK_BEGIN osMutexWait(ap_io_mutex_id, osWaitForever)
@@ -23,7 +27,7 @@ struct ap_io
 #endif
 
 public:
-  enum in_e // in_name
+  enum in_e: uint16_t// in_name
   {
     in00_ready_sw = AP_DEF_START_IN_ADDR,
     in01_busy_sw,
@@ -38,9 +42,9 @@ public:
     in11,
     in12_b_motor_org,
     in13,
-    in14_c_r_motor_org,
-    in15_c_l_motor_org,
-    in16,
+    in14,
+    in15_c_r_motor_org,
+    in16_c_l_motor_org,   
     in17,
   };
 
@@ -61,15 +65,15 @@ public:
       volatile unsigned in10 : 1;
       volatile unsigned in11 : 1;
       volatile unsigned in12_b_motor_org : 1;
-      volatile unsigned in13 : 1;
-      volatile unsigned in14_c_r_motor_org : 1;
-      volatile unsigned in15_c_l_motor_org : 1;
-      volatile unsigned in16 : 1;
+      volatile unsigned in13 : 1;      
+      volatile unsigned in14 : 1;
+      volatile unsigned in15_c_r_motor_org : 1;
+      volatile unsigned in16_c_l_motor_org : 1;
       volatile unsigned in17 : 1;
     };
   };
 
-  enum out_e // out_name
+  enum out_e : uint16_t // out_name
   {
     out00_ready_lamp = AP_DEF_START_OUT_ADDR,
     out01_busy_lamp,

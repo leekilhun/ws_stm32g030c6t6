@@ -21,8 +21,10 @@ extern "C" {
 #include "uart.h"
 #include "swtimer.h"
 #include "i2c.h"
+#include "iic_s.h"
 #include "tim.h"
 #include "adc.h"
+
 
 
 bool hwInit(void);

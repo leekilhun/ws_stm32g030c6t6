@@ -24,5 +24,9 @@ bool exhwInit(void)
 	ret &= pca8575pw_Init();
 #endif
 
+#ifdef _USE_EXHW_IICOMM_SLAVE
+  ret &= iicomm_devInit();
+#endif
+
   return ret;
 }

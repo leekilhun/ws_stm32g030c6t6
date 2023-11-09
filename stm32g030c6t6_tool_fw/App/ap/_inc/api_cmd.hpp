@@ -9,6 +9,9 @@
 #ifndef AP__INC_API_CMD_HPP_
 #define AP__INC_API_CMD_HPP_
 
+
+#include "ap_def.hpp"
+
 struct api_cmd
 {
   /****************************************************

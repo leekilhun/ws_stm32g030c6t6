@@ -5,19 +5,22 @@
  *      Author: gns2l
  */
 
+#pragma once
 #ifndef AP__INC_CNMOTORS_HPP_
 #define AP__INC_CNMOTORS_HPP_
 
-
+#include "ap_def.hpp"
 
 namespace MOTOR
 {
+  constexpr uint8_t def_motor_id_1 = 1;
+  constexpr uint8_t def_motor_id_2 = 2;
+  constexpr uint8_t def_motor_id_3 = 4;
+  constexpr uint8_t def_motor_id_all = 15;
 
-  constexpr uint16_t CN_MOTORS_VELOCITY_RPM_MAX    = 3000;
-  constexpr uint16_t CN_MOTORS_SYNC_DEC_RATE_MAX   = 2000;
-  constexpr uint16_t CN_MOTORS_TURN_DIST_MM_MAX    = 1000;
-  constexpr uint16_t CN_MOTORS_GEAR_RATE_MIN       = 2000;
-  constexpr uint16_t CN_MOTORS_GEAR_RATE_MAX       = 20000;
+#define MoTID_To_idx(id) (id==def_motor_id_1?AP_OBJ::MOTOR_A:\
+(id==def_motor_id_2?AP_OBJ::MOTOR_B:(id==def_motor_id_3?AP_OBJ::MOTOR_C:\
+(id==def_motor_id_all?AP_OBJ::MOTOR_MAX:-1))))
 
   class cnMotors
   {
@@ -25,350 +28,191 @@ namespace MOTOR
      *  data
      ****************************************************/
   public:
-    struct cfg_t  {
-      //axis_dat* p_apAxisDat;
-      ap_reg* ptr_apReg;
-      enMotor_moons *ptr_motor;
-      uart_moons *ptr_comm;
-      ap_io *ptr_io;
-      ap_dat* ptr_cfgDat;
+    struct cfg_t
+    {
+      // axis_dat* p_apAxisDat;
+      ap_reg *ptr_apReg{};
+      enStepMotor *ptr_motor{};
+      ap_io *ptr_io{};
 
       cfg_t() = default;
+      ~cfg_t() = default;
 
       // copy constructor
-      cfg_t(const cfg_t& rhs) = default;
+      cfg_t(const cfg_t &rhs) = default;
       // copy assignment operator
-      cfg_t& operator=(const cfg_t& rhs) = default;
+      cfg_t &operator=(const cfg_t &rhs) = default;
       // move constructor
-      cfg_t(cfg_t&& rhs) = default;
+      cfg_t(cfg_t &&rhs) = default;
       // move assignment operator
-      cfg_t& operator=(cfg_t&& rhs) = default;
+      cfg_t &operator=(cfg_t &&rhs) = default;
 
-    };
-
-    union CN_MOTORS_COMM
-    {
-      uint8_t comm_err{};
-      struct
-      {
-        unsigned  idx_0_comm_err : 1;       // = 0x00000001;
-        unsigned  idx_1_comm_err : 1;       // = 0x00000002;
-        unsigned  idx_2_comm_err : 1;       // = 0x00000004;
-        unsigned  idx_3_comm_err : 1;       // = 0x00000008;
-        unsigned  idx_4_comm_err : 1;       // = 0x00000010;
-        unsigned  idx_5_comm_err : 1;       // = 0x00000020;
-        unsigned  idx_6_comm_err : 1;       // = 0x00000040;
-        unsigned  idx_7_comm_err : 1;       // = 0x00000080;
-      };
-    };
-
-  private:
-    cfg_t m_cfg;
-    uint32_t m_request_ms;
-    CN_MOTORS_COMM m_commStatus;
-    uint8_t m_motorCommErrCnt[AP_OBJ::MOTOR_MAX];
+    } m_cfg{};
 
   public:
-    uint8_t m_requestMotor_idx;
-    prc_step_t m_step;
-    uint8_t m_errCnt;
-    std::array<bool, AP_OBJ::MOTOR_MAX> m_IsOriginCplt;
+    prc_step_t m_step{};
+    std::array<bool, AP_OBJ::MOTOR_MAX> m_IsOriginCplt{};
     /****************************************************
      *  Constructor
      ****************************************************/
   public:
-    cnMotors () : m_cfg{}, m_request_ms{}
-    ,m_commStatus{}, m_motorCommErrCnt{}
-    ,m_requestMotor_idx{}, m_step{}, m_errCnt{},m_IsOriginCplt{}
+    cnMotors()
     {
-
     }
 
-    virtual  ~cnMotors (){}
+    ~cnMotors() {}
     /****************************************************
      *  func
      ****************************************************/
   public:
-    inline int Init(cnMotors::cfg_t &cfg)  {
+    inline int Init(cnMotors::cfg_t &cfg)
+    {
       m_cfg = cfg;
       LOG_PRINT("Init Success!");
-      return 0;
+      return ERROR_SUCCESS;
     }
 
+    /**
+     * @brief
+     *
+     * @param id_data
+     * B0000'0001  motor 1
+     * B0000'0010  motor 2
+     * B0000'0100  motor 3
+     * B0000'1000  motor 4
+     *  1 ~ 4 B0000'1111
+     * @param is_on
+     * @return errno_t
+     */
+    inline errno_t MotorOnOff(uint8_t id_data, bool is_on = true)
+    {
+      int8_t motor_idx = MoTID_To_idx(id_data);
+      if (motor_idx == AP_OBJ::MOTOR_MAX)
+      {
+        is_on ? m_cfg.ptr_motor[AP_OBJ::MOTOR_A].Enable() : m_cfg.ptr_motor[AP_OBJ::MOTOR_A].Disable();
+        is_on ? m_cfg.ptr_motor[AP_OBJ::MOTOR_B].Enable() : m_cfg.ptr_motor[AP_OBJ::MOTOR_B].Disable();
+        is_on ? m_cfg.ptr_motor[AP_OBJ::MOTOR_C].Enable() : m_cfg.ptr_motor[AP_OBJ::MOTOR_C].Disable();
+      }
+      else if (motor_idx < AP_OBJ::MOTOR_MAX)
+      {
+        is_on ? m_cfg.ptr_motor[motor_idx].Enable() : m_cfg.ptr_motor[motor_idx].Disable();
+      }
+      else     
+        return ERROR_FAIL;
 
-    inline void ResetAlarmNon()  {
-      constexpr uint8_t STEP_STATE_ALARM_RESET = 8;
-      m_step.SetStep(STEP_STATE_ALARM_RESET);
+      return ERROR_SUCCESS;
     }
+
+    inline errno_t Move(uint8_t id_data, int cmd_cnt)
+    {
+     int8_t motor_idx = MoTID_To_idx(id_data);
+     if (motor_idx == AP_OBJ::MOTOR_MAX)
+      {
+        m_cfg.ptr_motor[AP_OBJ::MOTOR_A].Run(cmd_cnt, 10);
+        m_cfg.ptr_motor[AP_OBJ::MOTOR_B].Run(cmd_cnt, 10);
+        m_cfg.ptr_motor[AP_OBJ::MOTOR_C].Run(cmd_cnt, 10);
+      }
+      else if (motor_idx < AP_OBJ::MOTOR_MAX)
+      {
+         m_cfg.ptr_motor[motor_idx].Run(cmd_cnt, 10);
+      }
+      else     
+        return ERROR_FAIL;
+  
+
+      return ERROR_SUCCESS;
+    }
+
 
     inline void GetMotorState(AP_OBJ::MOTOR id = AP_OBJ::MOTOR_MAX)
     {
-      m_requestMotor_idx = (uint8_t)id;
-      m_step.SetStep(4);
     }
 
     // step machine을 통해 nonblock으로 처리된다.
     inline void ThreadJob()
     {
       doRunStep();
-#ifndef _USE_HW_RTOS
-      m_cfg.ptr_comm->ReceiveProcess();
-#endif
     }
-
 
     inline void doRunStep()
     {
-      enum {
-        STEP_INIT,STEP_TODO,STEP_TIMEOUT,STEP_RESET_COMM_ALARM,
-        STEP_STATE_UPDATE,STEP_STATE_UPDATE_START,STEP_STATE_UPDATE_WAIT,STEP_STATE_UPDATE_END,
-        STEP_STATE_ALARM_RESET,STEP_STATE_ALARM_RESET_START,STEP_STATE_ALARM_RESET_WAIT,STEP_STATE_ALARM_RESET_END,
-      };
-      constexpr uint8_t step_retry_max = 3;
-      constexpr uint8_t comm_timeout_max = 200;
-
-
-      switch(m_step.GetStep())
+      enum
       {
-        case STEP_INIT:
-        {
-          m_step.SetStep(STEP_TODO);
-        }
-        break;
+        STEP_INIT,
+        STEP_TODO,
+        STEP_TIMEOUT,
+        STEP_RESET_COMM_ALARM,
+        STEP_STATE_UPDATE,
+        STEP_STATE_UPDATE_START,
+        STEP_STATE_UPDATE_WAIT,
+        STEP_STATE_UPDATE_END,
+        STEP_STATE_ALARM_RESET,
+        STEP_STATE_ALARM_RESET_START,
+        STEP_STATE_ALARM_RESET_WAIT,
+        STEP_STATE_ALARM_RESET_END,
+      };
+      //constexpr uint8_t step_retry_max = 3;
+      //constexpr uint8_t comm_timeout_max = 200;
 
-        /*######################################################
-         to do
-        ######################################################*/
-        case STEP_TODO:
-        {
-          if (m_cfg.ptr_comm->IsAvailableComm())
-          {
-            m_step.SetStep(STEP_STATE_UPDATE);
-            break;
-          }
+      switch (m_step.GetStep())
+      {
+      case STEP_INIT:
+      {
+        m_step.SetStep(STEP_TODO);
+      }
+      break;
 
-          //check timeout
-          if (m_step.LessThan(comm_timeout_max))
-            break;
+      /*######################################################
+       to do
+      ######################################################*/
+      case STEP_TODO:
+      {
+      }
+      break;
+      /*######################################################
+        timeout
+      ######################################################*/
+      case STEP_TIMEOUT:
+      {
+      }
+      break;
+      /*######################################################
+        STEP_STATE_UPDATE
+      ######################################################*/
+      case STEP_STATE_UPDATE:
+      {
+        m_step.wait_resp = false;
+        m_step.wait_step = 0;
+        m_step.retry_cnt = 0;
+        m_step.SetStep(STEP_STATE_UPDATE_START);
+      }
+      break;
 
-          LOG_PRINT("STEP_TODO timeout!");
-          m_step.SetStep(STEP_TIMEOUT);
-        }
-        break;
-        /*######################################################
-          timeout
-        ######################################################*/
-        case STEP_TIMEOUT:
-        {
-          if (m_cfg.ptr_motor[m_requestMotor_idx].IsAlarmState())
-          {
-            m_step.SetStep(STEP_STATE_ALARM_RESET);
-            break;
-          }
-          else
-            LOG_PRINT("STEP_TIMEOUT idx [%d] , recovery result[%d]",  m_requestMotor_idx, m_cfg.ptr_comm->Recovery());
+      case STEP_STATE_UPDATE_START:
+      {
+      }
+      break;
 
-          m_step.SetStep(STEP_TODO);
-        }
-        break;
-        /*######################################################
-          STEP_STATE_UPDATE
-        ######################################################*/
-        case STEP_STATE_UPDATE:
-        {
-          m_step.wait_resp = false;
-          m_step.wait_step = 0;
-          m_step.retry_cnt = 0;
-
-          // 1. set request motor id ( 1 > 2 > 3 > 1 > 2 > 3)
-          /*
-          for(uint8_t i = 0; i <(uint8_t)AP_OBJ::MOTOR_MAX; ++i)
-          {
-            bool check = m_cfg.ptr_motor[i].m_motorData.al_code.al_status == 0;
-            check &=  m_cfg.ptr_motor[i].m_isReceived;
-          }
-          */
-
-          /*
-
-
-            TxData.Data : 01 03 00 00 00 0c 45 cf
-            RxData.node_id : 0x01
-            RxData.func_type : 0x03
-            RxData.data_length : 0x18
-            RxData.Data : 00 00 00 09 00 00 00 ff 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-
-           */
-
-          m_requestMotor_idx = m_requestMotor_idx % AP_OBJ::MOTOR_MAX;
-          m_step.SetStep(STEP_STATE_UPDATE_START);
-        }
-        break;
-
-        case STEP_STATE_UPDATE_START:
-        {
-          if (m_cfg.ptr_motor[m_requestMotor_idx].GetMotorData()== ERROR_SUCCESS)
-            m_step.SetStep(STEP_STATE_UPDATE_WAIT);
-          else
-          {
-            LOG_PRINT("STEP_STATE_UPDATE_START GetMotorData failed! idx [%d]",  m_requestMotor_idx);
-            m_step.SetStep(STEP_TIMEOUT);
-          }
-
-
-          //m_step.wait_resp = true;
-          /*
-          if (m_cfg.p_comm->IsAvailableComm() == false)
-          {
-            if (m_step.LessThan(COMM_TIMEOUT_MAX))
-              break;
-
-            m_step.SetStep(STEP_TIMEOUT);
-            break;
-          }
-
-          if (m_cfg.p_motor[m_requestMotor_idx].GetMotorData()== ERROR_SUCCESS)
-            m_step.SetStep(STEP_STATE_UPDATE_WAIT);
-          else
-            m_step.SetStep(STEP_TIMEOUT);
-            */
-        }
-        break;
-
-        case STEP_STATE_UPDATE_WAIT:
-        {
-          if(m_step.LessThan(50))
-            break;
-
-          if (m_cfg.ptr_comm->IsAvailableComm())
-          {
-            //LOG_PRINT("STEP_STATE_UPDATE_WAIT response time [%dms]",m_cfg.ptr_comm->m_packet.resp_ms );
-
-            m_step.SetStep(STEP_STATE_UPDATE_END);
-          }
-          else
-          {
-            if (m_step.retry_cnt++ < step_retry_max)
-            {
-              m_step.SetStep(STEP_STATE_UPDATE_WAIT); // timer reset
-              break;
-            }
-            m_step.SetStep(STEP_TIMEOUT);
-            LOG_PRINT("STEP_TIMEOUT idx [%d] , retry[%d]",  m_requestMotor_idx, m_step.retry_cnt);
-
-          }
-        }
-        break;
-
-        case STEP_STATE_UPDATE_END:
-        {
-
-          m_step.SetStep(STEP_TODO);
-          break;
- /*
-          m_commStatus.comm_err &= ~(1 << (m_requestMotor_idx));
-
-          if (m_cfg.p_motor[m_requestMotor_idx].IsCommAlarm())
-          {
-            m_motorCommErrCnt[m_requestMotor_idx]++;
-            m_step.SetStep(STEP_RESET_COMM_ALARM);
-            break;
-          }
-
-          ++m_requestMotor_idx;
-          */
-          if (m_requestMotor_idx == AP_OBJ::MOTOR_R )
-          {
-            m_requestMotor_idx = 0;
-            m_step.SetStep(STEP_TODO);
-          }
-          else
-          {
-            ++m_requestMotor_idx;
-            m_step.SetStep(STEP_STATE_UPDATE_START);
-          }
-
-        }
-        break;
-
-        /*######################################################
-          STEP_STATE_ALARM_RESET
-        ######################################################*/
-        case STEP_STATE_ALARM_RESET:
-        {
-          m_step.wait_resp = false;
-          m_step.wait_step = 0;
-          m_step.retry_cnt = 0;
-
-          m_requestMotor_idx = 0;
-          m_step.SetStep(STEP_STATE_ALARM_RESET_END);
-          for(uint8_t i = 0; i <(uint8_t)AP_OBJ::MOTOR_MAX; ++i)
-          {
-           if(m_cfg.ptr_motor[i].IsCommAlarm())
-           {
-             m_requestMotor_idx = i;
-             m_step.SetStep(STEP_STATE_ALARM_RESET_START);
-             i = (uint8_t)AP_OBJ::MOTOR_MAX;
-           }
-          }
-        }
-        break;
-
-        case STEP_STATE_ALARM_RESET_START:
-        {
-
-          m_cfg.ptr_motor[m_requestMotor_idx].ResetAlarmNon();
-          LOG_PRINT("STEP_TIMEOUT idx [%d]",  m_requestMotor_idx);
-          m_step.SetStep(STEP_STATE_ALARM_RESET_WAIT);
-        }
-        break;
-
-        case STEP_STATE_ALARM_RESET_WAIT:
-        {
-          if(m_step.LessThan(100))
-            break;
-
-          /*
-
-            TxData.Data        : 01 06 00 7c 00 ba c9 a1
-            RxData.node_id     : 0x01
-            RxData.func_type   : 0x06
-            RxData.data_length : 0x02
-            RxData.Data        : 00 ba
-
-
-           */
-
-          m_requestMotor_idx = 0;
-          m_step.SetStep(STEP_STATE_ALARM_RESET_END);
-          for(uint8_t i = 0; i <(uint8_t)AP_OBJ::MOTOR_MAX; ++i)
-          {
-            if(m_cfg.ptr_motor[i].IsCommAlarm())
-            {
-              m_requestMotor_idx = i;
-              m_step.SetStep(STEP_STATE_ALARM_RESET_START);
-              i = (uint8_t)AP_OBJ::MOTOR_MAX;
-            }
-          }
-
-
-        }
-        break;
-
-        case STEP_STATE_ALARM_RESET_END:
-        {
-          m_step.retry_cnt = 0;
-          m_step.SetStep(STEP_TODO);
-        }
-        break;
-
-        default:
+      case STEP_STATE_UPDATE_WAIT:
+      {
+        if (m_step.LessThan(50))
           break;
       }
+      break;
+
+      case STEP_STATE_UPDATE_END:
+      {
+
+        m_step.SetStep(STEP_TODO);
+        break;
+      }
+      break;
+
+      default:
+        break;
+      }
       // end of switch
-
     }
-
 
 #if 0
 
@@ -625,18 +469,6 @@ namespace MOTOR
     }
 
 
-    inline int MotorOnOff(bool on_off = true, AP_OBJ::MOTOR motor_id =AP_OBJ::MOTOR_MAX){
-      if (motor_id == AP_OBJ::MOTOR_MAX)
-      {
-        int ret = 0;
-        ret += m_cfg.p_motor[AP_OBJ::MOTOR_JIG].MotorOnOff(on_off);
-        ret += m_cfg.p_motor[AP_OBJ::MOTOR_ROLL].MotorOnOff(on_off);
-        ret += m_cfg.p_motor[AP_OBJ::MOTOR_HIGH].MotorOnOff(on_off);
-        return ret;
-      }
-      return m_cfg.p_motor[motor_id].MotorOnOff(on_off);
-    }
-
     inline int MotorClearAlarm(AP_OBJ::MOTOR motor_id = AP_OBJ::MOTOR_MAX){
       if (motor_id == AP_OBJ::MOTOR_MAX)
       {
@@ -869,10 +701,7 @@ namespace MOTOR
     }
 
 #endif
-
-
   };
-}// end of namespace MOTOR
-
+} // end of namespace MOTOR
 
 #endif /* AP__INC_CNMOTORS_HPP_ */

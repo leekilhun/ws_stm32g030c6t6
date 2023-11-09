@@ -18,6 +18,8 @@
 
 
 extern TIM_HandleTypeDef htim3;
+extern TIM_HandleTypeDef htim14;
+extern TIM_HandleTypeDef htim16;
 
 
 tim_tbl_t  tim_tbl[TIM_MAX_CH];
@@ -52,7 +54,7 @@ bool timInit(void)
   }
 
 #ifdef _USE_HW_CLI
-cliAdd("timer", cliTimer);
+  cliAdd("timer", cliTimer);
 #endif
 
   return true;
@@ -68,27 +70,61 @@ tim_tbl_t * timGetData(uint8_t ch)
 bool timStart(uint8_t ch)
 {
   TIM_MasterConfigTypeDef sMasterConfig = {0};
-
   switch (ch)
   {
     case _DEF_TIM1:
       tim_tbl[ch].pHandle  = &htim3;
 
       /* timer clock interval 1us, initial event time 1ms  */
-      htim3.Instance                = TIM3;
-      htim3.Init.Prescaler          = (uint32_t)(SystemCoreClock/1000000)-1;
-      htim3.Init.CounterMode        = TIM_COUNTERMODE_UP;
-      htim3.Init.Period             = (1000-1);
-      htim3.Init.ClockDivision      = TIM_CLOCKDIVISION_DIV1;
-      htim3.Init.AutoReloadPreload  = TIM_AUTORELOAD_PRELOAD_ENABLE;
-      if (HAL_TIM_Base_Init(&htim3) != HAL_OK)
+      tim_tbl[ch].pHandle->Instance                = TIM3;
+      tim_tbl[ch].pHandle->Init.Prescaler          = (uint32_t)(SystemCoreClock/1000000)-1;
+      tim_tbl[ch].pHandle->Init.CounterMode        = TIM_COUNTERMODE_UP;
+      tim_tbl[ch].pHandle->Init.Period             = (1000-1);
+      tim_tbl[ch].pHandle->Init.ClockDivision      = TIM_CLOCKDIVISION_DIV1;
+      tim_tbl[ch].pHandle->Init.AutoReloadPreload  = TIM_AUTORELOAD_PRELOAD_ENABLE;
+      if (HAL_TIM_Base_Init(tim_tbl[ch].pHandle) != HAL_OK)
       {
         return false;
       }
 
       sMasterConfig.MasterOutputTrigger       = TIM_TRGO_RESET;
       sMasterConfig.MasterSlaveMode           = TIM_MASTERSLAVEMODE_DISABLE;
-      if (HAL_TIMEx_MasterConfigSynchronization(&htim3, &sMasterConfig) != HAL_OK)
+      if (HAL_TIMEx_MasterConfigSynchronization(tim_tbl[ch].pHandle, &sMasterConfig) != HAL_OK)
+      {
+        return false;
+      }
+
+      tim_tbl[ch].is_start = true;
+      break;
+
+    case _DEF_TIM2:
+      tim_tbl[ch].pHandle  = &htim14;
+
+      /* timer clock interval 1us, initial event time 1ms  */
+      tim_tbl[ch].pHandle->Instance                = TIM14;
+      tim_tbl[ch].pHandle->Init.Prescaler          = (uint32_t)(SystemCoreClock/1000000)-1;
+      tim_tbl[ch].pHandle->Init.CounterMode        = TIM_COUNTERMODE_UP;
+      tim_tbl[ch].pHandle->Init.Period             = (1000-1);
+      tim_tbl[ch].pHandle->Init.ClockDivision      = TIM_CLOCKDIVISION_DIV1;
+      tim_tbl[ch].pHandle->Init.AutoReloadPreload  = TIM_AUTORELOAD_PRELOAD_ENABLE;
+      if (HAL_TIM_Base_Init(tim_tbl[ch].pHandle) != HAL_OK)
+      {
+        return false;
+      }
+      tim_tbl[ch].is_start = true;
+      break;
+
+    case _DEF_TIM3:
+      tim_tbl[ch].pHandle  = &htim16;
+
+      /* timer clock interval 1us, initial event time 1ms  */
+      tim_tbl[ch].pHandle->Instance                = TIM16;
+      tim_tbl[ch].pHandle->Init.Prescaler          = (uint32_t)(SystemCoreClock/1000000)-1;
+      tim_tbl[ch].pHandle->Init.CounterMode        = TIM_COUNTERMODE_UP;
+      tim_tbl[ch].pHandle->Init.Period             = (1000-1);
+      tim_tbl[ch].pHandle->Init.ClockDivision      = TIM_CLOCKDIVISION_DIV1;
+      tim_tbl[ch].pHandle->Init.AutoReloadPreload  = TIM_AUTORELOAD_PRELOAD_ENABLE;
+      if (HAL_TIM_Base_Init(tim_tbl[ch].pHandle) != HAL_OK)
       {
         return false;
       }
@@ -133,10 +169,13 @@ void timDisableISR(uint8_t ch)
   if (tim_tbl[ch].is_start == false)
     return;
 
+  //LOG_PRINT("ch[%d]",ch);
   if (HAL_TIM_Base_Stop_IT(tim_tbl[ch].pHandle) != HAL_OK)
   {
     /* Error */
+    LOG_PRINT("[NG] ch[%d]  ",ch);
   }
+  //LOG_PRINT("[OK] ch[%d]",ch);
 }
 
 
@@ -183,7 +222,6 @@ bool timChangeAutoReloadRegister(uint8_t ch,uint32_t arr)
 }
 
 
-
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
 
@@ -202,42 +240,33 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
       (*tim_tbl[_DEF_TIM1].func_cb)(tim_tbl[_DEF_TIM1].obj, NULL, NULL);
     }
   }
-
-}
-
-#if 0
-
-void HAL_TIM_Base_MspInit(TIM_HandleTypeDef* tim_baseHandle)
-{
-
-  if(tim_baseHandle->Instance==TIM3)
+  else if(htim->Instance==TIM14)
   {
-    /* TIM3 clock enable */
-    __HAL_RCC_TIM3_CLK_ENABLE();
-
-    /* TIM3 interrupt Init */
-    HAL_NVIC_SetPriority(TIM3_TIM4_IRQn, 0, 0);
-    HAL_NVIC_EnableIRQ(TIM3_TIM4_IRQn);
+    if (tim_tbl[_DEF_TIM2].func_callback != NULL )
+    {
+      (*tim_tbl[_DEF_TIM2].func_callback)();
+    }
+    if (tim_tbl[_DEF_TIM2].func_cb != NULL )
+    {
+      (*tim_tbl[_DEF_TIM2].func_cb)(tim_tbl[_DEF_TIM2].obj, NULL, NULL);
+    }
   }
-
-}
-
-void HAL_TIM_Base_MspDeInit(TIM_HandleTypeDef* tim_baseHandle)
-{
-
-  if(tim_baseHandle->Instance==TIM3)
+  else if(htim->Instance==TIM16)
   {
-    /* Peripheral clock disable */
-    __HAL_RCC_TIM3_CLK_DISABLE();
-
-    /* TIM3 interrupt Deinit */
-    HAL_NVIC_DisableIRQ(TIM3_TIM4_IRQn);
+    if (tim_tbl[_DEF_TIM3].func_callback != NULL )
+    {
+      (*tim_tbl[_DEF_TIM3].func_callback)();
+    }
+    if (tim_tbl[_DEF_TIM3].func_cb != NULL )
+    {
+      (*tim_tbl[_DEF_TIM3].func_cb)(tim_tbl[_DEF_TIM3].obj, NULL, NULL);
+    }
   }
 
 }
 
 
-#endif
+
 
 #ifdef _USE_HW_CLI
 

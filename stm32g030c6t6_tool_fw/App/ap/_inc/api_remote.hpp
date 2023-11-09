@@ -5,6 +5,7 @@
  *      Author: gns2l
  */
 
+#pragma once
 #ifndef AP__INC_API_REMOTE_HPP_
 #define AP__INC_API_REMOTE_HPP_
 

@@ -54,7 +54,7 @@
    #define CW                    0
    #define CCW                   1
 
-
+  typedef	unsigned int	          uint;
    #define BYTE                  uint8_t
    #define TRUE                  1
    #define FALSE                 0
@@ -104,6 +104,10 @@
    #define _DEF_I2S3             2
    #define _DEF_I2S4             3
 
+   #define _DEF_IIC_S1           0
+   #define _DEF_IIC_S2           1
+   #define _DEF_IIC_S3           2
+
    #define _DEF_TIM1             0
    #define _DEF_TIM2             1
    #define _DEF_TIM3             2
@@ -151,6 +155,13 @@
    #define gmin(a,b) (((a) < (b)) ? (a) : (b))
    #endif
 
+  #define MaKEWORD(a, b)      ((uint16_t)(((uint8_t)(((uint32_t)(a)) & 0xff)) | ((uint16_t)((uint8_t)(((uint32_t)(b)) & 0xff))) << 8))
+  #define MaKEDWORD(a, b)      ((uint32_t)(((uint16_t)(((uint32_t)(a)) & 0xffff)) | ((uint32_t)((uint16_t)(((uint32_t)(b)) & 0xffff))) << 16))
+  #define LoWORD(l)           ((uint16_t)(((uint16_t)(l)) & 0xffff))
+  #define HiWORD(l)           ((uint16_t)((((uint16_t)(l)) >> 16) & 0xffff))
+  #define LoBYTE(w)           ((uint8_t)(((uint16_t)(w)) & 0xff))
+  #define HiBYTE(w)           ((uint8_t)((((uint16_t)(w)) >> 8) & 0xff))
+
 
    #ifndef map
    #define map(value, in_min, in_max, out_min, out_max) ((value - in_min) * (out_max - out_min) / (in_max - in_min) + out_min)
@@ -159,7 +170,6 @@
 
    #define FLASH_MAGIC_NUMBER      0x5555AAAA
 
-   #if 0
    typedef union
    {
      uint8_t  u8Data[4];
@@ -178,7 +188,7 @@
      int16_t  s16D;
      int32_t  s32D;
    } data_t;
-   #endif
+   
 
    typedef struct
    {
@@ -212,8 +222,8 @@
    } firm_tag_t;
 
 
-void delay(uint32_t time_ms);
-uint32_t millis(void);
+// void delay(uint32_t time_ms);
+// uint32_t millis(void);
 
 
 

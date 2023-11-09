@@ -11,6 +11,7 @@
 
 #include "hw.h"
 
+#define  _USE_EXHW_IICOMM_DEV
 //#define	_USE_EXHW_AT24C64
 //#define _USE_EXHW_PCA8575PW_EX_IO
 //#define     _EXHW_PCA8575PW_EX_IO_MAX_CH    2

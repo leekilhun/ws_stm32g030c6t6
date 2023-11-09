@@ -5,10 +5,12 @@
  *      Author: gns2l
  */
 
+#pragma once
 #ifndef AP__INC_AP_DAT_HPP_
 #define AP__INC_AP_DAT_HPP_
 
 
+#include "ap_def.hpp"
 
 
 struct AxisSystemXRZ
@@ -88,6 +90,34 @@ constexpr auto mcu_data_data_dword_max = 4;
 //max 80 byte
 struct mcu_data_st
 {
+  enum dat_addr : uint8_t
+  {
+    addr_system = 0x00,
+    addr_state = 0x02,
+    addr_option = 0x04,
+    addr_err = 0x08,
+    addr_io_in_0 = 0x0C,
+    addr_io_in_1 = 0x10,
+    addr_io_in_2 = 0x14,
+    addr_io_out_0 = 0x18,
+    addr_io_out_1 = 0x1C,
+    addr_io_out_2 = 0x20,
+    addr_motor_cnt = 0x24,
+    addr_motor_reserved = 0x26,
+    addr_motor_pulse_0 = 0x28,
+    addr_motor_pulse_1 = 0x2C,
+    addr_motor_pulse_2 = 0x30,
+    addr_motor_pulse_3 = 0x34,
+    addr_motor_state_0 = 0x38,
+    addr_motor_state_1 = 0x3A,
+    addr_motor_state_2 = 0x3C,
+    addr_motor_state_3 = 0x3E,
+    addr_datas_0 = 0x40,
+    addr_datas_1 = 0x44,
+    addr_datas_2 = 0x48,
+    addr_datas_3 = 0x4C,
+  };
+  
   uint16_t reg_sys{};
   uint16_t reg_state{}; //
   uint32_t reg_option{}; //
@@ -95,6 +125,7 @@ struct mcu_data_st
   std::array < uint32_t, mcu_data_io_dword_max> io_in{};//
   std::array < uint32_t, mcu_data_io_dword_max> io_out{};//
   uint16_t motor_cnt{};//
+  uint16_t motor_reserved{};
   std::array < uint32_t, mcu_data_motor_dword_max> motor_pulse{};//
   std::array < uint16_t, mcu_data_motor_dword_max> motor_status{};//
   std::array < uint32_t, mcu_data_data_dword_max> datas{};

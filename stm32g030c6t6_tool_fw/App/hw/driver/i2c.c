@@ -34,7 +34,6 @@ static i2c_freq_t i2c_freq[I2C_MAX_CH];
 
 static bool is_init = false;
 static bool is_open[I2C_MAX_CH];
-static void delay_us(uint32_t us);
 
 
 #ifdef _USE_HW_RTOS
@@ -445,17 +444,6 @@ uint32_t i2cGetErrCount(uint8_t ch)
 {
   return i2c_errcount[ch];
 }
-
-void delay_us(uint32_t us)
-{
-  volatile uint32_t i;
-
-  for (i=0; i<us*1000; i++)
-  {
-
-  }
-}
-
 
 
 #ifdef _USE_HW_CLI
