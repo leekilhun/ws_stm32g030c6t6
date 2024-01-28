@@ -9,7 +9,6 @@
 #ifndef AP__INC_API_CMD_HPP_
 #define AP__INC_API_CMD_HPP_
 
-
 #include "ap_def.hpp"
 
 struct api_cmd
@@ -24,7 +23,8 @@ public:
     CMD::uart_cmd *ptr_comm{};
     ap_reg *ptr_mcu_reg{};
     ap_io *ptr_io{};
-    mcu_data_st *ptr_mcu_data{};
+    mcu_tool_data_align_48_t *ptr_mcu_data{};
+    MOTOR::cnMotors *ptr_motors{};
 
     cfg_t() = default;
     // destructor
@@ -97,9 +97,8 @@ public:
 
   inline errno_t SendData(CMD::TX_TYPE type)
   {
-    constexpr uint8_t CMD_STX0 = 0x4A;
-    constexpr uint8_t CMD_STX1 = 0x4C;
-    std::array<uint8_t, CMD::CMD_MAX_PACKET_LENGTH> datas = {};
+
+    std::array<uint8_t, CMD::uart_cmd::CMD_MAX_PACKET_LENGTH> datas = {};
     /*
      | STX0 | STX1 | Type  | objId | Data Length |Data      | Checksum |
      | :--- |:-----|:------|:----- |:------------|:---------| :------  |
@@ -121,8 +120,8 @@ public:
 
     constexpr uint16_t obj_id = 0x0000;
     uint16_t length = 0;
-    datas[idx_stx0] = CMD_STX0;
-    datas[idx_stx1] = CMD_STX1;
+    datas[idx_stx0] = CMD::uart_cmd::CMD_STX0;
+    datas[idx_stx1] = CMD::uart_cmd::CMD_STX1;
     datas[idx_type_l] = (uint8_t)(type >> 0);
     datas[idx_type_h] = (uint8_t)(type >> 8);
     datas[idx_objid_l] = (uint8_t)(obj_id >> 0);
@@ -130,7 +129,7 @@ public:
     constexpr const char *tools_info = "TOOLS_SYS_1.0.0";
     switch (type)
     {
-      case CMD::TX_OK_RESPONSE:
+    case CMD::TX_OK_RESPONSE:
       break;
 
     case CMD::TX_TOOL_INFO:
@@ -174,6 +173,10 @@ public:
       */
     return m_cfg.ptr_comm->SendCmd(datas.data(), length);
   }
+  inline errno_t Ret_OkResponse()
+  {
+    return SendData(CMD::TX_TYPE::TX_OK_RESPONSE);
+  }
 
   // It is processed as nonblock through machine step.
   inline void ThreadJob()
@@ -197,7 +200,7 @@ public:
       return (uint8_t)(offset + sizeof(dest));
     };
     cmd_t rx_cmd = (cmd_t)m_receiveData.type;
-    LOG_PRINT("ProcessCmd cmd type[%d], resp_ms[%d]", rx_cmd, m_receiveData.resp_ms);
+    //LOG_PRINT("ProcessCmd cmd type[%d], resp_ms[%d]", rx_cmd, m_receiveData.resp_ms);
 
     switch (rx_cmd)
     {
@@ -218,7 +221,7 @@ public:
       uint8_t idx = 0;
       idx = ret_data(idx, io_reg_data);
       m_cfg.ptr_io->SetOutputReg(io_reg_data);
-      LOG_PRINT("CMD_CTRL_IO_OUT value[%d]", io_reg_data);
+      //LOG_PRINT("CMD_CTRL_IO_OUT value[%d]", io_reg_data);
     }
     break;
 
@@ -272,6 +275,68 @@ public:
 
     case cmd_t::CMD_CTRL_MOT_VEL_JOG:
       break;
+
+    case cmd_t::CMD_CTRL_TOOL_PnP:
+    {
+      Ret_OkResponse();
+      uint16_t order{};
+      int data_1{}, data_2{};
+      uint8_t tool_obj_id = uint8_t(1 << (m_receiveData.obj_id));
+      uint8_t idx = 0;
+      idx = ret_data(idx, order);
+      idx = ret_data(idx, data_1);
+      idx = ret_data(idx, data_2);
+
+      //tool_obj_id = 0b010;// for test
+      switch ((CMD::tool_PnP_order_e)order)
+      {
+      case CMD::tool_PnP_order_e::TOOL_CMD_ORD_MOTOR_ENABLE:
+        if (m_cfg.ptr_motors->MotorOnOff(tool_obj_id) != ERROR_SUCCESS)
+          LOG_PRINT("DoOrigin Error");
+        break;
+
+      case CMD::tool_PnP_order_e::TOOL_CMD_ORD_MOTOR_DISABLE:
+        if (m_cfg.ptr_motors->MotorOnOff(tool_obj_id, false) != ERROR_SUCCESS)
+          LOG_PRINT("DoOrigin Error");
+        break;
+
+      case CMD::tool_PnP_order_e::TOOL_CMD_ORD_MOTOR_RUN:
+        if (m_cfg.ptr_motors->Move(tool_obj_id, data_1) != ERROR_SUCCESS)
+          LOG_PRINT("DoOrigin Error");
+        // m_cfg.ptr_tool->MotorRun(tool_obj_id, data_1);
+        break;
+
+      case CMD::tool_PnP_order_e::TOOL_CMD_ORD_MOTOR_ORG:
+        if (m_cfg.ptr_motors->DoOrigin(tool_obj_id) != ERROR_SUCCESS)
+          LOG_PRINT("DoOrigin Error");
+        break;
+
+      default:
+        break;
+      }
+    }
+    break;
+
+    case cmd_t::CMD_MODE_FW_DOWNLOAD:
+    {
+      SendData(CMD::TX_OK_RESPONSE);
+      uint32_t magic_data = 0;
+      uint8_t idx = 0;
+      idx = ret_data(idx, magic_data);
+      if (magic_data == FLASH_MAGIC_NUMBER)
+      {
+        LOG_PRINT("CMD_MODE_FW_DOWNLOAD");
+        const uint32_t stmf030c_addr_sysmem = 0x1FFF0000;
+        const uint32_t wait_download_timeout_ms = 1000 * 2;
+        wdgBegin(wait_download_timeout_ms);
+        bspDeInit();
+        __set_MSP(*(uint32_t *)stmf030c_addr_sysmem);
+
+        void (**jump_addr)(void) = (void (**)(void))(stmf030c_addr_sysmem + 4);
+        (*jump_addr)();
+      }
+    }
+    break;
 
     default:
       break;

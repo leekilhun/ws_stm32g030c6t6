@@ -44,6 +44,8 @@ I2C_HandleTypeDef hi2c1;
 DMA_HandleTypeDef hdma_i2c1_rx;
 DMA_HandleTypeDef hdma_i2c1_tx;
 
+IWDG_HandleTypeDef hiwdg;
+
 TIM_HandleTypeDef htim3;
 TIM_HandleTypeDef htim14;
 TIM_HandleTypeDef htim16;
@@ -67,6 +69,7 @@ static void MX_I2C1_Init(void);
 static void MX_TIM3_Init(void);
 static void MX_TIM14_Init(void);
 static void MX_TIM16_Init(void);
+static void MX_IWDG_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -111,6 +114,7 @@ int main(void)
   MX_TIM3_Init();
   MX_TIM14_Init();
   MX_TIM16_Init();
+  MX_IWDG_Init();
   /* USER CODE BEGIN 2 */
 
   /* USER CODE END 2 */
@@ -151,6 +155,12 @@ void SystemClock_Config(void)
   /* HSE configuration and activation */
   LL_RCC_HSE_Enable();
   while(LL_RCC_HSE_IsReady() != 1)
+  {
+  }
+
+  /* LSI configuration and activation */
+  LL_RCC_LSI_Enable();
+  while(LL_RCC_LSI_IsReady() != 1)
   {
   }
 
@@ -228,6 +238,35 @@ static void MX_I2C1_Init(void)
   /* USER CODE BEGIN I2C1_Init 2 */
 
   /* USER CODE END I2C1_Init 2 */
+
+}
+
+/**
+  * @brief IWDG Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_IWDG_Init(void)
+{
+
+  /* USER CODE BEGIN IWDG_Init 0 */
+#if 0
+  /* USER CODE END IWDG_Init 0 */
+
+  /* USER CODE BEGIN IWDG_Init 1 */
+
+  /* USER CODE END IWDG_Init 1 */
+  hiwdg.Instance = IWDG;
+  hiwdg.Init.Prescaler = IWDG_PRESCALER_4;
+  hiwdg.Init.Window = 4095;
+  hiwdg.Init.Reload = 4095;
+  if (HAL_IWDG_Init(&hiwdg) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN IWDG_Init 2 */
+#endif
+  /* USER CODE END IWDG_Init 2 */
 
 }
 

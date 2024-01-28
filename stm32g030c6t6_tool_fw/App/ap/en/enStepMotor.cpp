@@ -48,12 +48,17 @@ void enStepMotor::SetStep(int steps, uint32_t speed)
 errno_t enStepMotor::Run(int steps, uint32_t speed)
 {
   if (m_status.motor_enabled == false)
+  {
+    LOG_PRINT("motor_enabled Fail! motor_idx[0x%02X]", m_cfg.obj_idx);
     return -1;
-
+  }
   if (m_status.initializ_cplt == false)
+  {
+    LOG_PRINT("initializ_cplt Fail! motor_idx[0x%02X]", m_cfg.obj_idx);
     return -2;
+  }
 
-  //LOG_PRINT("timer id[%d], steps[%d], speed[%d]%",m_cfg.timer_id, steps, speed);
+  //LOG_PRINT("id[0x%02X], steps[%d], speed[%d]%", m_cfg.obj_idx, steps, speed);
   this->SetStep(steps,speed);
   timEnableISR(m_cfg.timer_id);
   return ERROR_SUCCESS;
@@ -124,7 +129,9 @@ bool enStepMotor::ProcessZeroSet()
     STEP_CHECK_DIR_END,
 
   };
-  //LOG_PRINT("step [%d]  wait[%d]",m_step.curr_step, m_step.wait_step);
+
+  // if (m_cfg.obj_idx == AP_OBJ::MOTOR_C)
+  //   LOG_PRINT("step [%d]  wait[%d]", m_step.curr_step, m_step.wait_step);
 
   switch (m_step.GetStep())
   {
@@ -175,6 +182,7 @@ bool enStepMotor::ProcessZeroSet()
     m_status.zero_homing = false;
     m_status.drive_fault = true;
     m_status.err_timeout = true;
+    Stop();
     return true;
   }
   break;
@@ -205,7 +213,8 @@ bool enStepMotor::ProcessZeroSet()
     m_step.SetStep(STEP_CHECK_DISABLE_END);  
     if (m_cfg.ptr_io->IsOn(m_cfg.io_input_idx_zero) && m_cfg.ptr_io->IsOn(m_cfg.io_input_idx_zero_ex))
     {
-       Enable();
+      m_step.SetStep(STEP_CHECK_DISABLE_END);
+      Enable();
     }
     else
     {
@@ -232,9 +241,7 @@ bool enStepMotor::ProcessZeroSet()
     m_step.wait_step = 0;
     m_step.retry_cnt = 0;
     step_count = 0;
-
-    vel_index = 2; //timer interrupt 2us
-
+    
     constexpr uint8_t def_step_move_sensor_to_detect = 1;
     if (m_cfg.ptr_io->IsOn(m_cfg.io_input_idx_zero))
     {
@@ -320,7 +327,7 @@ bool enStepMotor::ProcessZeroSet()
       {
         step_count = 0;
         Direction(false);
-        vel_index = 50; //set timer interrupt 50us
+        vel_index = def_org_slow_interrupt_time_us; //set timer interrupt 300us
         m_step.wait_step = step_slow_sensor_pos;
       }
       break;

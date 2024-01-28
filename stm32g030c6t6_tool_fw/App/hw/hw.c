@@ -29,6 +29,10 @@ bool hwInit(void)
   ret &= adcInit();
 #endif
 
+#ifdef _USE_HW_WDG
+  ret &= wdgInit();
+#endif
+
 
 #ifdef _USE_HW_LOG
   ret &= logInit();

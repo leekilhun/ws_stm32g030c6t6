@@ -15,6 +15,8 @@ I2C_HandleTypeDef hi2c1;
 DMA_HandleTypeDef hdma_i2c1_rx;
 DMA_HandleTypeDef hdma_i2c1_tx;
 
+IWDG_HandleTypeDef hiwdg;
+
 TIM_HandleTypeDef htim3;
 TIM_HandleTypeDef htim14;
 TIM_HandleTypeDef htim16;
@@ -35,6 +37,8 @@ static void MX_TIM3_Init(void);
 static void MX_TIM14_Init(void);
 static void MX_TIM16_Init(void);
 
+static void MX_IWDG_Init(void);
+
 int main(void)
 {
   HAL_Init();
@@ -50,6 +54,8 @@ int main(void)
   MX_TIM3_Init();
   MX_TIM14_Init();
   MX_TIM16_Init();
+
+  MX_IWDG_Init();
 
   bspInit();
   hwInit();
@@ -86,6 +92,12 @@ void SystemClock_Config(void)
   /* HSE configuration and activation */
   LL_RCC_HSE_Enable();
   while(LL_RCC_HSE_IsReady() != 1)
+  {
+  }
+
+  /* LSI configuration and activation */
+  LL_RCC_LSI_Enable();
+  while(LL_RCC_LSI_IsReady() != 1)
   {
   }
 
@@ -163,6 +175,35 @@ static void MX_I2C1_Init(void)
   /* USER CODE BEGIN I2C1_Init 2 */
 
   /* USER CODE END I2C1_Init 2 */
+
+}
+
+/**
+  * @brief IWDG Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_IWDG_Init(void)
+{
+
+  /* USER CODE BEGIN IWDG_Init 0 */
+#if 0
+  /* USER CODE END IWDG_Init 0 */
+
+  /* USER CODE BEGIN IWDG_Init 1 */
+
+  /* USER CODE END IWDG_Init 1 */
+  hiwdg.Instance = IWDG;
+  hiwdg.Init.Prescaler = IWDG_PRESCALER_4;
+  hiwdg.Init.Window = 4095;
+  hiwdg.Init.Reload = 4095;
+  if (HAL_IWDG_Init(&hiwdg) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN IWDG_Init 2 */
+#endif
+  /* USER CODE END IWDG_Init 2 */
 
 }
 
@@ -388,6 +429,8 @@ static void MX_DMA_Init(void)
 static void MX_GPIO_Init(void)
 {
   GPIO_InitTypeDef GPIO_InitStruct = {0};
+/* USER CODE BEGIN MX_GPIO_Init_1 */
+/* USER CODE END MX_GPIO_Init_1 */
 
   /* GPIO Ports Clock Enable */
   __HAL_RCC_GPIOC_CLK_ENABLE();
@@ -465,6 +508,8 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
+/* USER CODE BEGIN MX_GPIO_Init_2 */
+/* USER CODE END MX_GPIO_Init_2 */
 }
 
 /* USER CODE BEGIN 4 */
@@ -485,6 +530,8 @@ void Error_Handler(void)
   }
   /* USER CODE END Error_Handler_Debug */
 }
+
+
 
 #ifdef  USE_FULL_ASSERT
 /**

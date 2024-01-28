@@ -83,67 +83,58 @@ struct pos_data_st
 };
 
 
-
-constexpr auto mcu_data_io_dword_max = 3;
-constexpr auto mcu_data_motor_dword_max = 4;
-constexpr auto mcu_data_data_dword_max = 4;
-//max 80 byte
-struct mcu_data_st
+struct mcu_tool_data_align_48_t
 {
-  enum dat_addr : uint8_t
-  {
-    addr_system = 0x00,
-    addr_state = 0x02,
-    addr_option = 0x04,
-    addr_err = 0x08,
-    addr_io_in_0 = 0x0C,
-    addr_io_in_1 = 0x10,
-    addr_io_in_2 = 0x14,
-    addr_io_out_0 = 0x18,
-    addr_io_out_1 = 0x1C,
-    addr_io_out_2 = 0x20,
-    addr_motor_cnt = 0x24,
-    addr_motor_reserved = 0x26,
-    addr_motor_pulse_0 = 0x28,
-    addr_motor_pulse_1 = 0x2C,
-    addr_motor_pulse_2 = 0x30,
-    addr_motor_pulse_3 = 0x34,
-    addr_motor_state_0 = 0x38,
-    addr_motor_state_1 = 0x3A,
-    addr_motor_state_2 = 0x3C,
-    addr_motor_state_3 = 0x3E,
-    addr_datas_0 = 0x40,
-    addr_datas_1 = 0x44,
-    addr_datas_2 = 0x48,
-    addr_datas_3 = 0x4C,
-  };
-  
-  uint16_t reg_sys{};
-  uint16_t reg_state{}; //
-  uint32_t reg_option{}; //
-  uint32_t reg_err{}; //
-  std::array < uint32_t, mcu_data_io_dword_max> io_in{};//
-  std::array < uint32_t, mcu_data_io_dword_max> io_out{};//
-  uint16_t motor_cnt{};//
-  uint16_t motor_reserved{};
-  std::array < uint32_t, mcu_data_motor_dword_max> motor_pulse{};//
-  std::array < uint16_t, mcu_data_motor_dword_max> motor_status{};//
-  std::array < uint32_t, mcu_data_data_dword_max> datas{};
+private:
+    static constexpr auto io_dword_max = 1;
+    static constexpr auto motor_dword_max = 3;
+    static constexpr auto data_dword_max = 2;
 
+public:
+    enum dat_addr : uint8_t
+    {
+        addr_system = 0,
+        addr_state = 2,
+        addr_option = 4,
+        addr_err = 8,
+        addr_io_in_0 = 12,
+        addr_io_out_0 = 16,
+        addr_motor_cnt = 20,
+        addr_motor_reserved = 22,
+        addr_motor_pulse_0 = 24,
+        addr_motor_pulse_1 = 28,
+        addr_motor_pulse_2 = 32,
+        addr_motor_state_0 = 36,
+        addr_motor_state_1 = 38,
+        addr_motor_state_2 = 40,
+        addr_motor_reserved2 = 42,
+        addr_datas_0 = 44,
+        addr_datas_1 = 46,
+    };
+    uint16_t reg_sys{};                                   //
+    uint16_t reg_state{};                                 //
+    uint32_t reg_option{};                                //
+    uint32_t reg_err{};                                   // 
+    std::array<uint32_t, io_dword_max> io_in{};           // 
+    std::array<uint32_t, io_dword_max> io_out{};          // 
+    uint16_t motor_cnt{};                                 //
+    uint16_t motor_reserved{};                            // 24
+    std::array<uint32_t, motor_dword_max> motor_pulse{};  // 36
+    std::array<uint16_t, motor_dword_max> motor_status{}; // 
+    uint16_t motor_reserved2{};                           // 44
+    std::array<uint16_t, data_dword_max> datas{};         // 48
 
-  mcu_data_st() = default;
-
-  ~mcu_data_st() = default;
-  // copy constructor
-  mcu_data_st(const mcu_data_st& rhs) = default;
-  // copy assignment operator
-  mcu_data_st& operator=(const mcu_data_st& rhs) = default;
-  // move constructor
-  mcu_data_st(mcu_data_st&& rhs) = default;
-  // move assignment operator
-  mcu_data_st& operator=(mcu_data_st&& rhs) = default;
+    mcu_tool_data_align_48_t() = default;
+    ~mcu_tool_data_align_48_t() = default;
+    // copy constructor
+    mcu_tool_data_align_48_t(const mcu_tool_data_align_48_t &rhs) = default;
+    // copy assignment operator
+    mcu_tool_data_align_48_t &operator=(const mcu_tool_data_align_48_t &rhs) = default;
+    // move constructor
+    mcu_tool_data_align_48_t(mcu_tool_data_align_48_t &&rhs) = default;
+    // move assignment operator
+    mcu_tool_data_align_48_t &operator=(mcu_tool_data_align_48_t &&rhs) = default;
 };
-
 
 
 

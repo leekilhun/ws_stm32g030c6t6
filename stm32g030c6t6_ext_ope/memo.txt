@@ -1,0 +1,75 @@
+-mcpu=cortex-m0plus 
+-std=gnu11 
+-g3 
+-DDEBUG 
+-DUSER_VECT_TAB_ADDRESS 
+-DUSE_HAL_DRIVER 
+-DSTM32G030xx 
+-DUSE_FULL_LL_DRIVER 
+-c 
+-I../Core/Inc -I../Drivers/STM32G0xx_HAL_Driver/Inc 
+-I../Drivers/STM32G0xx_HAL_Driver/Inc/Legacy 
+-I../Drivers/CMSIS/Device/ST/STM32G0xx/Include 
+-I../Drivers/CMSIS/Include 
+-I"D:\stmIDE\ws_stm32g030c6t6\stm32g030c6t6_tool_fw\App\ap" 
+-I"D:\stmIDE\ws_stm32g030c6t6\stm32g030c6t6_tool_fw\App\ap\_inc" 
+-I"D:\stmIDE\ws_stm32g030c6t6\stm32g030c6t6_tool_fw\App\ap\api" 
+-I"D:\stmIDE\ws_stm32g030c6t6\stm32g030c6t6_tool_fw\App\bsp" 
+-I"D:\stmIDE\ws_stm32g030c6t6\stm32g030c6t6_tool_fw\App\common" 
+-I"D:\stmIDE\ws_stm32g030c6t6\stm32g030c6t6_tool_fw\App\common\core"
+-I"D:\stmIDE\ws_stm32g030c6t6\stm32g030c6t6_tool_fw\App\common\inc_exhw" 
+-I"D:\stmIDE\ws_stm32g030c6t6\stm32g030c6t6_tool_fw\App\common\inc_hw" 
+-I"D:\stmIDE\ws_stm32g030c6t6\stm32g030c6t6_tool_fw\App\exhw"
+-I"D:\stmIDE\ws_stm32g030c6t6\stm32g030c6t6_tool_fw\App\exhw\driver" 
+-I"D:\stmIDE\ws_stm32g030c6t6\stm32g030c6t6_tool_fw\App\hw" 
+-I"D:\stmIDE\ws_stm32g030c6t6\stm32g030c6t6_tool_fw\App\hw\driver" 
+-Os 
+-ffunction-sections 
+-fdata-sections 
+-Wall 
+-fstack-usage 
+-fcyclomatic-complexity 
+--specs=nano.specs 
+-mfloat-abi=soft 
+-mthumb
+
+
+
+-mcpu=cortex-m0plus 
+-std=gnu++17 
+-g3 
+-DDEBUG 
+-DUSER_VECT_TAB_ADDRESS 
+-DUSE_HAL_DRIVER 
+-DSTM32G030xx 
+-DUSE_FULL_LL_DRIVER 
+-c 
+-I../Core/Inc 
+-I../Drivers/STM32G0xx_HAL_Driver/Inc 
+-I../Drivers/STM32G0xx_HAL_Driver/Inc/Legacy 
+-I../Drivers/CMSIS/Device/ST/STM32G0xx/Include 
+-I../Drivers/CMSIS/Include 
+-I"D:\stmIDE\ws_stm32g030c6t6\stm32g030c6t6_tool_fw\App\ap" 
+-I"D:\stmIDE\ws_stm32g030c6t6\stm32g030c6t6_tool_fw\App\ap\_inc"
+ -I"D:\stmIDE\ws_stm32g030c6t6\stm32g030c6t6_tool_fw\App\ap\api" 
+ -I"D:\stmIDE\ws_stm32g030c6t6\stm32g030c6t6_tool_fw\App\bsp" 
+ -I"D:\stmIDE\ws_stm32g030c6t6\stm32g030c6t6_tool_fw\App\common" 
+ -I"D:\stmIDE\ws_stm32g030c6t6\stm32g030c6t6_tool_fw\App\common\core" 
+ -I"D:\stmIDE\ws_stm32g030c6t6\stm32g030c6t6_tool_fw\App\common\inc_exhw" 
+ -I"D:\stmIDE\ws_stm32g030c6t6\stm32g030c6t6_tool_fw\App\common\inc_hw" 
+ -I"D:\stmIDE\ws_stm32g030c6t6\stm32g030c6t6_tool_fw\App\exhw" 
+ -I"D:\stmIDE\ws_stm32g030c6t6\stm32g030c6t6_tool_fw\App\exhw\driver" 
+ -I"D:\stmIDE\ws_stm32g030c6t6\stm32g030c6t6_tool_fw\App\hw" 
+ -I"D:\stmIDE\ws_stm32g030c6t6\stm32g030c6t6_tool_fw\App\hw\driver" 
+ -Os 
+ -ffunction-sections 
+ -fdata-sections 
+ -fno-exceptions 
+ -fno-rtti 
+ -fno-use-cxa-atexit 
+ -Wall 
+ -fstack-usage 
+ -fcyclomatic-complexity 
+ --specs=nano.specs 
+ -mfloat-abi=soft 
+ -mthumb

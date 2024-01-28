@@ -29,9 +29,13 @@ static void cliApp(cli_args_t *args);
  ****************************************************/
 ap_io mcu_io;
 // CMD::uart_cmd cmd_comm;
+#ifdef _USE_EXHW_IICOMM_DEV
 iic_cmd cmd_comm;
+#else
+CMD::uart_cmd cmd_comm;
+#endif
 ap_reg mcu_reg;
-mcu_data_st mcu_data;
+mcu_tool_data_align_48_t mcu_data;
 
 /****************************************************
   1. ap instances
@@ -44,35 +48,39 @@ enLed leds[AP_OBJ::LED_MAX];
 MOTOR::cnMotors motors;
 
 // control
-cnAuto autoManager;
+// cnAuto autoManager;
 // cnJob process;
-cnTasks tasks;
-// api_cmd tool_cmd;
+// cnTasks tasks;
+
+api_cmd tool_cmd;
+
 
 void apInit(void)
 {
 
-#ifdef _USE_HW_IIC_S
-  if (iicsBegin(_DEF_IIC_S1, IICS_FREQ_400KHz))
-    LOG_PRINT("iicsBegin  Success!");
-  else
-    LOG_PRINT("iicsBegin  Fail!");
-#endif
+  // #ifdef _USE_HW_IIC_S
+  //   if (iicsBegin(_DEF_IIC_S1, IICS_FREQ_400KHz))
+  //     LOG_PRINT("iicsBegin  Success!");
+  //   else
+  //     LOG_PRINT("iicsBegin  Fail!");
+  // #endif
 
+#ifdef _USE_EXHW_IICOMM_DEV
   {
     iic_cmd::cfg_t cfg{};
     cfg.ReadReg = iicomm_devReadReg;
     cfg.WriteReg = iicomm_devWriteReg;
     cmd_comm.Init(cfg);
   }
-
-  // {
-  //   using namespace CMD;
-  //   uart_cmd::cfg_t cfg{};
-  //   cfg.ch = HW_UART_CH_RS485;
-  //   cfg.baud = 115200;
-  //   cmd_comm.Init(cfg);
-  // }
+#else
+  {
+    using namespace CMD;
+    uart_cmd::cfg_t cfg{};
+    cfg.ch = HW_UART_PC;
+    cfg.baud = 115200;
+    cmd_comm.Init(cfg);
+  }
+#endif
 
 #ifdef _USE_HW_CLI
 
@@ -85,7 +93,7 @@ void apInit(void)
     {
       enStepMotor::cfg_t cfg{};
       cfg.obj_idx = AP_OBJ::MOTOR_A;
-      cfg.sm_type = stepmotorType_e::ccw_to_zero;
+      cfg.sm_type = stepmotorType_e::cw_to_zero;
       cfg.io_input_idx_zero = ap_io::in_e::in07_a_motor_org;
       cfg.ptr_io = &mcu_io;
       cfg.timer_id = _DEF_TIM1;
@@ -96,12 +104,13 @@ void apInit(void)
       cfg.gpio_pin_step = IO_OUT_9_Pin;
       cfg.gpio_port_step = IO_OUT_9_GPIO_Port;
       cfg.ptr_timer = timGetData(_DEF_TIM1);
-      motor[AP_OBJ::MOTOR_A].Init(cfg);
+      if (motor[AP_OBJ::MOTOR_A].Init(cfg) != ERROR_SUCCESS)
+        LOG_PRINT("motor[AP_OBJ::MOTOR_A] Init Failed!");
     }
     {
       enStepMotor::cfg_t cfg{};
       cfg.obj_idx = AP_OBJ::MOTOR_B;
-      cfg.sm_type = stepmotorType_e::cw_to_zero;
+      cfg.sm_type = stepmotorType_e::ccw_to_zero;
       cfg.io_input_idx_zero = ap_io::in_e::in12_b_motor_org;
       cfg.ptr_io = &mcu_io;
       cfg.timer_id = _DEF_TIM2;
@@ -112,7 +121,8 @@ void apInit(void)
       cfg.gpio_pin_step = IO_OUT_12_Pin;
       cfg.gpio_port_step = IO_OUT_12_GPIO_Port;
       cfg.ptr_timer = timGetData(_DEF_TIM2);
-      motor[AP_OBJ::MOTOR_B].Init(cfg);
+      if (motor[AP_OBJ::MOTOR_B].Init(cfg) != ERROR_SUCCESS)
+        LOG_PRINT("motor[AP_OBJ::MOTOR_B] Init Failed!");
     }
     {
       enStepMotor::cfg_t cfg{};
@@ -129,7 +139,8 @@ void apInit(void)
       cfg.gpio_pin_step = IO_OUT_15_Pin;
       cfg.gpio_port_step = IO_OUT_15_GPIO_Port;
       cfg.ptr_timer = timGetData(_DEF_TIM3);
-      motor[AP_OBJ::MOTOR_C].Init(cfg);
+      if (motor[AP_OBJ::MOTOR_C].Init(cfg) != ERROR_SUCCESS)
+        LOG_PRINT("motor[AP_OBJ::MOTOR_C] Init Failed!");
     }
   }
 
@@ -137,9 +148,9 @@ void apInit(void)
     enBtn::cfg_t cfg;
     cfg.gpio_port = IO_IN_0_GPIO_Port;
     cfg.gpio_pin = IO_IN_0_Pin;
-    cfg.repeat_time_detect = 60; // ISR count
-    cfg.repeat_time = 200;
-    cfg.repeat_time_delay = 250;
+    cfg.repeat_time_detect = 6; // ISR count
+    cfg.repeat_time = 20;
+    cfg.repeat_time_delay = 25;
     memset(&cfg.name_str[0], 0, sizeof(cfg.name_str));
     strlcpy(&cfg.name_str[0], "0_START", sizeof(cfg.name_str));
     if (btns[AP_OBJ::BTN_START].Init(cfg) != ERROR_SUCCESS)
@@ -147,9 +158,9 @@ void apInit(void)
 
     cfg.gpio_port = IO_IN_1_GPIO_Port;
     cfg.gpio_pin = IO_IN_1_Pin;
-    cfg.repeat_time_detect = 60; // ISR count
-    cfg.repeat_time = 200;
-    cfg.repeat_time_delay = 250;
+    cfg.repeat_time_detect = 6; // ISR count
+    cfg.repeat_time = 20;
+    cfg.repeat_time_delay = 25;
     memset(&cfg.name_str[0], 0, sizeof(cfg.name_str));
     strlcpy(&cfg.name_str[0], "1_RESET", sizeof(cfg.name_str));
     if (btns[AP_OBJ::BTN_RESET].Init(cfg) != ERROR_SUCCESS)
@@ -157,9 +168,9 @@ void apInit(void)
 
     cfg.gpio_port = IO_IN_2_GPIO_Port;
     cfg.gpio_pin = IO_IN_2_Pin;
-    cfg.repeat_time_detect = 60; // ISR count
-    cfg.repeat_time = 200;
-    cfg.repeat_time_delay = 250;
+    cfg.repeat_time_detect = 6; // ISR count
+    cfg.repeat_time = 20;
+    cfg.repeat_time_delay = 25;
     memset(&cfg.name_str[0], 0, sizeof(cfg.name_str));
     strlcpy(&cfg.name_str[0], "2_STOP", sizeof(cfg.name_str));
     if (btns[AP_OBJ::BTN_STOP].Init(cfg) != ERROR_SUCCESS)
@@ -222,30 +233,31 @@ void apInit(void)
 
   /* automanager initial */
   {
-    cnAuto::cfg_t auto_cfg = {};
-    auto_cfg.ptr_apReg = &mcu_reg;
-    auto_cfg.ptr_op = &op_panel;
-    auto_cfg.ptr_io = &mcu_io;
-    if (autoManager.Init(auto_cfg) != ERROR_SUCCESS)
-      LOG_PRINT("autoManager Init Failed!");
+    // cnAuto::cfg_t auto_cfg = {};
+    // auto_cfg.ptr_apReg = &mcu_reg;
+    // auto_cfg.ptr_op = &op_panel;
+    // auto_cfg.ptr_io = &mcu_io;
+    // if (autoManager.Init(auto_cfg) != ERROR_SUCCESS)
+    //   LOG_PRINT("autoManager Init Failed!");
   }
 
   /* task jos initial */
   {
-    cnTasks::cfg_t cfg = {};
-    if (tasks.Init(cfg) != ERROR_SUCCESS)
-      LOG_PRINT("tasks Init Failed!");
+    // cnTasks::cfg_t cfg = {};
+    // if (tasks.Init(cfg) != ERROR_SUCCESS)
+    //   LOG_PRINT("tasks Init Failed!");
   }
 
-  // {
-  //   api_cmd::cfg_t cfg{};
-  //   cfg.ptr_comm = &cmd_comm;
-  //   cfg.ptr_io = &mcu_io;
-  //   cfg.ptr_mcu_data = &mcu_data;
-  //   cfg.ptr_mcu_reg = &mcu_reg;
+  {
+    api_cmd::cfg_t cfg{};
+    cfg.ptr_comm = &cmd_comm;
+    cfg.ptr_io = &mcu_io;
+    cfg.ptr_mcu_data = &mcu_data;
+    cfg.ptr_mcu_reg = &mcu_reg;
+    cfg.ptr_motors = &motors;
 
-  //   tool_cmd.Init(cfg);
-  // }
+    tool_cmd.Init(cfg);
+  }
 
   /*Assign Obj */
   mcu_io.Init();
@@ -254,6 +266,10 @@ void apInit(void)
   cliAdd("app", cliApp);
 #endif
 }
+
+// extern TIM_HandleTypeDef htim3;
+// extern TIM_HandleTypeDef htim14;
+// extern TIM_HandleTypeDef htim16;
 
 void apMain(void)
 {
@@ -305,16 +321,18 @@ void apMain(void)
     if (millis() - pre_time >= 1'000)
     {
       pre_time = millis();
+
+      //LOG_PRINT("TIM14->SR [0x%08X], motor2 step[%d] wait[%d]",TIM14->SR, motor[AP_OBJ::MOTOR_B].m_step.curr_step, motor[AP_OBJ::MOTOR_B].m_step.wait_step); 
     }
 
     /* 0. auto management*/
     // autoManager.ThreadJob();
 
     /**/
-    tasks.ThreadJob();
+    // tasks.ThreadJob();
 
     /* 1. tool cmd*/
-    // tool_cmd.ThreadJob();
+    tool_cmd.ThreadJob();
 
 #ifdef _USE_HW_CLI
     cliMain();
@@ -338,46 +356,72 @@ void eventOpPanel()
   // const enOp::lamp_e y_busy = enOp::LAMP_BUSY;
   // const enOp::lamp_e r_error = enOp::LAMP_ERROR;
 
-  switch (autoManager.GetOPStatus())
+  /**
+   * @brief set tool system status
+   *
+   */
+  {
+    if (motor[AP_OBJ::MOTOR_B].m_status.initializ_cplt)
+    {
+      op_panel.SetStatus(enOp::status_e::STEP_STOP);
+    }
+    else
+    {
+      op_panel.SetStatus(enOp::status_e::INIT);
+    }
+  }
+
+  constexpr uint8_t test_motor_idx = AP_OBJ::MOTOR_B;
+  switch (op_panel.GetStatus())
   {
   case system_init:
   {
-    if (btns[AP_OBJ::BTN_START].IsPressed())
+    if (btns[AP_OBJ::BTN_START].IsLongKey())
     {
       // LOG_PRINT("start btn Pressed");
-      autoManager.SetOPStatus(enOp::status_e::STEP_STOP);
-      op_panel.LampOnOff(enOp::LAMP_READY, false);
-      op_panel.LampOnOff(enOp::LAMP_BUSY, false);
-      op_panel.LampOnOff(enOp::LAMP_ERROR, false);
+      btns[AP_OBJ::BTN_START].ResetEvent();
+
+      if (motors.MotorOnOff(0b1000, true))
+      {
+
+      }
+
+      if (motors.DoOrigin(0b1000))
+      {
+
+      }
+
+      // if (motor[test_motor_idx].m_status.motor_enabled == false)
+      //   motor[test_motor_idx].Enable();
+
+      // if (motor[test_motor_idx].SetZeroPosition() != ERROR_SUCCESS)
+      //   LOG_PRINT("SetZeroPosition fail!");
     }
   }
   break;
 
   case auto_stop:
   {
-    op_panel.LampOnOff(enOp::LAMP_READY);
-    constexpr uint8_t test_motor_idx = AP_OBJ::MOTOR_B;
-    if (btns[AP_OBJ::BTN_START].IsPressed())
+    if (btns[AP_OBJ::BTN_START].IsLongKey())
     {
+      btns[AP_OBJ::BTN_START].ResetEvent();
       if (motor[test_motor_idx].m_status.motor_enabled == false)
         motor[test_motor_idx].Enable();
     }
-    else if (btns[AP_OBJ::BTN_RESET].IsPressed())
+    else if (btns[AP_OBJ::BTN_RESET].IsLongKey())
     {
-      while (btns[AP_OBJ::BTN_RESET].IsPressed())
-      {
-      };
+      btns[AP_OBJ::BTN_RESET].ResetEvent();
       // motor[test_motor_idx].Run(1600, 50);
-      motor[test_motor_idx].SetZeroPosition();
+      if (motor[test_motor_idx].SetZeroPosition() != ERROR_SUCCESS)
+        LOG_PRINT("SetZeroPosition fail!");
       // motor[test_motor_idx].test_constant_run(1600,1);
 
       // else
       //   LOG_PRINT("state [0x%02X]", motor[test_motor_idx].state);
     }
-    else if (btns[AP_OBJ::BTN_STOP].IsPressed())
+    else if (btns[AP_OBJ::BTN_STOP].IsShortKey())
     {
-      while (btns[AP_OBJ::BTN_RESET].IsPressed())
-        ;
+      btns[AP_OBJ::BTN_STOP].ResetEvent();
       if (motor[test_motor_idx].m_status.motor_enabled)
         motor[test_motor_idx].Disable();
     }
@@ -437,7 +481,7 @@ void updateLamp()
     // const enOp::lamp_e r_error = enOp::LAMP_ERROR;
 
     static uint32_t on_led_ms;
-    switch (autoManager.GetOPStatus())
+    switch (op_panel.GetStatus())
     {
     case system_init:
     {
@@ -485,9 +529,9 @@ void updateLamp()
    */
   {
     bool is_run[AP_OBJ::MOTOR_MAX] =
-        {!motor[AP_OBJ::MOTOR_A].move_done,
-         !motor[AP_OBJ::MOTOR_B].move_done,
-         !motor[AP_OBJ::MOTOR_C].move_done};
+        {motor[AP_OBJ::MOTOR_A].m_status.moving != 0,
+         motor[AP_OBJ::MOTOR_B].m_status.moving != 0,
+         motor[AP_OBJ::MOTOR_C].m_status.moving != 0};
     enum : uint8_t
     {
       LED_IDLE,
@@ -524,8 +568,8 @@ void updateLamp()
         if (millis() - motor_state_pre_time[i] >= LED_IDLE_TIME)
         {
           motor_state_pre_time[i] = millis();
-          motor_state[i] = LED_ON;
-          op_panel.LampOnOff((enOp::lamp_e)(enOp::LAMP_READY + i), true);
+          motor_state[i] = LED_IDLE;
+          // op_panel.LampOnOff((enOp::lamp_e)(enOp::LAMP_READY + i), false);
         }
 
       default:
@@ -551,8 +595,6 @@ void updateApReg()
   enum : uint8_t
   {
     io_1d,
-    io_2d,
-    io_3d,
     io_max
   };
   enum : uint8_t
@@ -560,15 +602,12 @@ void updateApReg()
     motor_1d,
     motor_2d,
     motor_3d,
-    motor_4d,
     motor_max
   };
   enum : uint8_t
   {
     data_1d,
     data_2d,
-    data_3d,
-    data_4d,
     data_max
   };
   mcu_data.reg_sys = mcu_io.m_sysio.system_io;
@@ -576,11 +615,7 @@ void updateApReg()
   mcu_data.reg_option = mcu_reg.option_reg.ap_option;
   mcu_data.reg_err = mcu_reg.error_reg.ap_error;
   mcu_data.io_in[io_1d] = mcu_io.m_in.data;
-  mcu_data.io_in[io_2d] = 0;
-  mcu_data.io_in[io_3d] = 0;
   mcu_data.io_out[io_1d] = mcu_io.m_out.data;
-  mcu_data.io_out[io_2d] = 0;
-  mcu_data.io_out[io_3d] = 0;
   mcu_data.motor_cnt = 3;
   mcu_data.motor_pulse[motor_1d] = motor[AP_OBJ::MOTOR_A].step_position; // 1'000; // 500'000;
   mcu_data.motor_status[motor_1d] = motor[AP_OBJ::MOTOR_A].m_status.sc_status;
@@ -588,10 +623,12 @@ void updateApReg()
   mcu_data.motor_status[motor_2d] = motor[AP_OBJ::MOTOR_B].m_status.sc_status;
   mcu_data.motor_pulse[motor_3d] = motor[AP_OBJ::MOTOR_C].step_position;
   mcu_data.motor_status[motor_3d] = motor[AP_OBJ::MOTOR_C].m_status.sc_status;
-  mcu_data.motor_pulse[motor_4d] = 0;
-  mcu_data.motor_status[motor_4d] = 0;
+  mcu_data.datas[data_1d] = 0;
+  mcu_data.datas[data_2d] = 0;
 }
 
+
+#ifdef _USE_EXHW_IICOMM_DEV
 void SendPeriodDataIIC()
 {
   if (cmd_comm.SetMcuData(&mcu_data) != ERROR_SUCCESS)
@@ -602,7 +639,7 @@ void processIIC()
 {
   switch (cmd_comm.Process())
   {
-  case iic_cmd::cmd_order_e::CMD_ORD_MOTOR_ENABLE:
+  case iic_cmd::CMD_ORD_MOTOR_ENABLE:
   {
     // LOG_PRINT("u8Data[0][0x%02X],u8Data[1][0x%02X],u8Data[2][0x%02X],u8Data[3][0x%02X]",
     //           cmd_comm.orderDatas[0].u8Data[0], cmd_comm.orderDatas[0].u8Data[1], cmd_comm.orderDatas[0].u8Data[2], cmd_comm.orderDatas[0].u8Data[3]);
@@ -623,7 +660,7 @@ void processIIC()
   }
   break;
 
-  case iic_cmd::cmd_order_e::CMD_ORD_MOTOR_DISABLE:
+  case iic_cmd::CMD_ORD_MOTOR_DISABLE:
   {
     if (cmd_comm.orderDatas[0].u8Data[0])
     {
@@ -634,15 +671,27 @@ void processIIC()
   }
   break;
 
-  case iic_cmd::cmd_order_e::CMD_ORD_MOTOR_RUN:
+  case iic_cmd::CMD_ORD_MOTOR_RUN:
   {
     uint8_t motor_id = cmd_comm.orderDatas[0].u8Data[0];
     data_t cnt_value{cmd_comm.orderDatas[0].u8Data[1], cmd_comm.orderDatas[0].u8Data[2], cmd_comm.orderDatas[0].u8Data[3], 0};
-    LOG_PRINT("CMD_ORD_MOTOR_RUN ID[0x%02X] CNT[%d]", motor_id, cnt_value.s32D);
-    if (motor_id && cnt_value.s32D)
+    // LOG_PRINT("CMD_ORD_MOTOR_RUN ID[0x%02X] CNT[%d]", motor_id, cnt_value.s32D);
+    if ((motor_id > 0) && (cnt_value.s32D != 0))
     {
       if (motors.Move(motor_id, cnt_value.s32D) != ERROR_SUCCESS)
         LOG_PRINT("Move Error");
+    }
+    goto reset_reg;
+  }
+  break;
+
+  case iic_cmd::CMD_ORD_MOTOR_ORG:
+  {
+    uint8_t motor_id = cmd_comm.orderDatas[0].u8Data[0];
+    if (motor_id > 0)
+    {
+      if (motors.DoOrigin(motor_id) != ERROR_SUCCESS)
+        LOG_PRINT("DoOrigin Error");
     }
     goto reset_reg;
   }
@@ -668,6 +717,9 @@ reset_reg:
     LOG_PRINT("cmd_comm.ResetOrderRegister Error");
   }
 }
+#else
+
+#endif
 
 void apISR_1ms(void *arg)
 {
@@ -675,8 +727,9 @@ void apISR_1ms(void *arg)
   updateApReg();
 
   updateErr();
-
+#ifdef _USE_EXHW_IICOMM_DEV
   processIIC();
+#endif
 
 #if 0
   if (uartAvailable(_DEF_UART1) > 0)
@@ -693,7 +746,9 @@ void apISR_10ms(void *arg)
 {
   updateLamp();
   eventOpPanel();
+#ifdef _USE_EXHW_IICOMM_DEV
   SendPeriodDataIIC();
+#endif
 
   for (auto &elm : btns)
     elm.ISR();

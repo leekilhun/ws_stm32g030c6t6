@@ -16,7 +16,7 @@ namespace MOTOR
   constexpr uint8_t def_motor_id_1 = 1;
   constexpr uint8_t def_motor_id_2 = 2;
   constexpr uint8_t def_motor_id_3 = 4;
-  constexpr uint8_t def_motor_id_all = 15;
+  constexpr uint8_t def_motor_id_all = 8;
 
 #define MoTID_To_idx(id) (id==def_motor_id_1?AP_OBJ::MOTOR_A:\
 (id==def_motor_id_2?AP_OBJ::MOTOR_B:(id==def_motor_id_3?AP_OBJ::MOTOR_C:\
@@ -76,22 +76,24 @@ namespace MOTOR
      * @brief
      *
      * @param id_data
-     * B0000'0001  motor 1
-     * B0000'0010  motor 2
-     * B0000'0100  motor 3
-     * B0000'1000  motor 4
-     *  1 ~ 4 B0000'1111
+     * B0000'0001  motor 1   MOTOR_A
+     * B0000'0010  motor 2   MOTOR_B
+     * B0000'0100  motor 3   MOTOR_C
+     * B0000'1000  motor all MOTOR_MAX
+     *
      * @param is_on
      * @return errno_t
      */
     inline errno_t MotorOnOff(uint8_t id_data, bool is_on = true)
     {
-      int8_t motor_idx = MoTID_To_idx(id_data);
+      volatile int8_t motor_idx = MoTID_To_idx(id_data);
+      
       if (motor_idx == AP_OBJ::MOTOR_MAX)
       {
         is_on ? m_cfg.ptr_motor[AP_OBJ::MOTOR_A].Enable() : m_cfg.ptr_motor[AP_OBJ::MOTOR_A].Disable();
-        is_on ? m_cfg.ptr_motor[AP_OBJ::MOTOR_B].Enable() : m_cfg.ptr_motor[AP_OBJ::MOTOR_B].Disable();
+        is_on ? m_cfg.ptr_motor[AP_OBJ::MOTOR_B].Enable() : m_cfg.ptr_motor[AP_OBJ::MOTOR_B].Disable();    
         is_on ? m_cfg.ptr_motor[AP_OBJ::MOTOR_C].Enable() : m_cfg.ptr_motor[AP_OBJ::MOTOR_C].Disable();
+        //LOG_PRINT("motor idx [%d]", motor_idx);
       }
       else if (motor_idx < AP_OBJ::MOTOR_MAX)
       {
@@ -106,6 +108,7 @@ namespace MOTOR
     inline errno_t Move(uint8_t id_data, int cmd_cnt)
     {
      int8_t motor_idx = MoTID_To_idx(id_data);
+
      if (motor_idx == AP_OBJ::MOTOR_MAX)
       {
         m_cfg.ptr_motor[AP_OBJ::MOTOR_A].Run(cmd_cnt, 10);
@@ -113,16 +116,34 @@ namespace MOTOR
         m_cfg.ptr_motor[AP_OBJ::MOTOR_C].Run(cmd_cnt, 10);
       }
       else if (motor_idx < AP_OBJ::MOTOR_MAX)
-      {
-         m_cfg.ptr_motor[motor_idx].Run(cmd_cnt, 10);
+      {         
+       return m_cfg.ptr_motor[motor_idx].Run(cmd_cnt, 10);
       }
       else     
         return ERROR_FAIL;
-  
 
       return ERROR_SUCCESS;
     }
 
+    inline errno_t DoOrigin(uint8_t id_data)
+    {
+      int8_t motor_idx = MoTID_To_idx(id_data);
+
+      if (motor_idx == AP_OBJ::MOTOR_MAX)
+      {
+        m_cfg.ptr_motor[AP_OBJ::MOTOR_A].SetZeroPosition();
+        m_cfg.ptr_motor[AP_OBJ::MOTOR_B].SetZeroPosition();
+        m_cfg.ptr_motor[AP_OBJ::MOTOR_C].SetZeroPosition();
+      }
+      else if (motor_idx < AP_OBJ::MOTOR_MAX)
+      {
+        return m_cfg.ptr_motor[motor_idx].SetZeroPosition();
+      }
+      else
+        return ERROR_FAIL;
+
+      return ERROR_SUCCESS;
+    }
 
     inline void GetMotorState(AP_OBJ::MOTOR id = AP_OBJ::MOTOR_MAX)
     {

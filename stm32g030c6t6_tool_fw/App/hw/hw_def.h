@@ -16,7 +16,7 @@
 
 #define _USE_HW_UART
 #define      HW_UART_MAX_CH         2
-#define      HW_UART_CH_RS485       _DEF_UART1
+#define      HW_UART_PC             _DEF_UART1
 #define      HW_LOG_CH              _DEF_UART2
 #define _USE_HW_UART_1_DMA_RX
 #define _USE_HW_UART_2_DMA_RX
@@ -34,6 +34,8 @@
 #endif
 
 
+#define _USE_HW_WDG
+
 
 //#define _USE_HW_CLI
 #define      HW_CLI_CMD_LIST_MAX    (32/2)
@@ -45,7 +47,7 @@
 //#define _USE_HW_I2C
 #define      HW_I2C_MAX_CH          1
 
-#define  _USE_HW_IIC_S
+//#define  _USE_HW_IIC_S
 #define       HW_IIC_S_MAX_CH       1
  #define        _IIC_SLAVE          _DEF_IIC_S1
  #define _USE_HW_IIC_S_1_DMA_RX

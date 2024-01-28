@@ -20,7 +20,7 @@ struct iic_cmd
     CMD_ORD_MOTOR_ENABLE = 1,
     CMD_ORD_MOTOR_DISABLE ,
     CMD_ORD_MOTOR_RUN,
-    CMD_ORD_3,
+    CMD_ORD_MOTOR_ORG,
     CMD_ORD_4,
   };
   /****************************************************
@@ -107,7 +107,7 @@ public:
     }
   };
 
-  inline errno_t SetMcuData(mcu_data_st *ptr_data)
+  inline errno_t SetMcuData(mcu_tool_data_align_48_t *ptr_data)
   {
     // LOG_PRINT("WriteReg [%d]",m_cfg.WriteReg);
     if (m_cfg.WriteReg != nullptr)

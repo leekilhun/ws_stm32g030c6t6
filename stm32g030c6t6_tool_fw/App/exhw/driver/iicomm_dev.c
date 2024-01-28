@@ -1,7 +1,7 @@
 /*
  * iicomm_slave.c
  *
- *  Created on: 2023. 11. 1.
+ *  Created on: 2023. 11. 15.
  *      Author: gns2.lee
  */
 
@@ -9,14 +9,14 @@
 
 #ifdef _USE_EXHW_IICOMM_DEV
 
-//128 = 80(mcu_data_info) + 12(out0-4, out1-4, out2-4) + 2 (command order 2(l,h)) + 8 (cmd_data0-4,cmd_data1-4) + 26(reserved)
+//128 = 48(mcu_tool_data_align_48_t) + 12(out0-4, out1-4, out2-4) + 2 (command order 2(l,h)) + 8 (cmd_data0-4,cmd_data1-4) + 58(reserved)
 uint8_t IICS_REG[IICS_REG_MAX];
 
 
 bool iicomm_devInit(void)
 {
   memset(IICS_REG, 0, sizeof(IICS_REG));
-  if (iicsBegin(0, IICS_FREQ_1MHz) == false)
+  if (iicsBegin(_IIC_SLAVE, IICS_FREQ_400KHz) == false)
   {
     LOG_PRINT("iicsBegin  Fail!");
     return false;
@@ -34,6 +34,9 @@ void iicomm_devUpdate(void)
 bool iicomm_devWriteReg(uint8_t addr, uint8_t *p_data)
 {
   // uint8_t test_ptr[] = {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20};
+  // if (iicsIsReady(_IIC_SLAVE) == false)
+  //   return false;
+
   switch (addr)
   {
   case IICOMM_CMD_WR_MCD_DATA:

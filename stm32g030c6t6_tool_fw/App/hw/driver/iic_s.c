@@ -200,6 +200,11 @@ bool iicsRecovery(uint8_t ch)
   return iicsBegin(ch, iics_freq[ch]);
 }
 
+bool iicsIsReady(uint8_t ch)
+{
+  return (iics_tbl[ch].p_hi2c->State == HAL_I2C_STATE_READY);
+}
+
 
 void iicsSetTimeout(uint8_t ch, uint32_t timeout)
 {

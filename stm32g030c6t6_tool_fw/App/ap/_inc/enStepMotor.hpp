@@ -13,15 +13,11 @@
 namespace MOTOR
 {
 
-  constexpr int MOTOR_PULSES_PER_REV = 1600; // Motor pulses per revolution, motor step 1.8 degree, tmc2209 microstep 1/8
-  constexpr int MOTOR_MAX_PRM = 500;         // Maximum motor RPM
-  constexpr int MOTOR_ACCEL_TIME_MS = 200;   // Acceleration and deceleration time
-
   enum class stepmotorType_e
   {
-    floating_zero, //set the initial position to zero and increase in the (cw) reverse direction.
-    cw_to_zero, //(clock wise) increase in the (cw) reverse direction.
-    ccw_to_zero, //(counter clock wise) increase in the (ccw) Forward direction.
+    floating_zero, // set the initial position to zero and increase in the (cw) reverse direction.
+    cw_to_zero,    //(clock wise) increase in the (cw) reverse direction.
+    ccw_to_zero,   //(counter clock wise) increase in the (ccw) Forward direction.
   };
 
   class enStepMotor
@@ -58,28 +54,29 @@ namespace MOTOR
     };
 
     union motor_status
-		{
-			uint16_t	sc_status;
-			struct
-			{
-				unsigned	motor_enabled : 1;   // = 0x00000001;
-				unsigned	drive_fault : 1;		 // = 0x00000002;
-				unsigned	in_position : 1;		 // = 0x00000004;
-				unsigned	moving : 1;	         // = 0x00000008;
-				unsigned	accel_moving : 1;	   // = 0x00000010;
-				unsigned	decel_moving : 1;		 // = 0x00000020;
-				unsigned	constant_moving : 1; // = 0x00000040;
-				unsigned	initializ_cplt : 1;	 // = 0x00000080;
-				unsigned	zero_homing : 1;	   // = 0x00000100;
-				unsigned	not_used0 : 1;		   // = 0x00000200;
-				unsigned	not_used1 : 1;	     // = 0x00000400;
-				unsigned	not_used2 : 1;		   // = 0x00000800;
-				unsigned	not_used3 : 1;       // = 0x00001000;
-				unsigned	not_used4 : 1;			 // = 0x00002000;
-				unsigned	not_used5 : 1;		   // = 0x00004000;
-				unsigned	err_timeout : 1;		 // = 0x00008000;
-			};
-		}m_status{};
+    {
+      uint16_t sc_status;
+      struct
+      {
+        unsigned motor_enabled : 1;   // = 0x00000001;
+        unsigned drive_fault : 1;     // = 0x00000002;
+        unsigned in_position : 1;     // = 0x00000004;
+        unsigned moving : 1;          // = 0x00000008;
+        unsigned accel_moving : 1;    // = 0x00000010;
+        unsigned decel_moving : 1;    // = 0x00000020;
+        unsigned constant_moving : 1; // = 0x00000040;
+        unsigned initializ_cplt : 1;  // = 0x00000080;
+
+        unsigned zero_homing : 1;     // = 0x00000100;
+        unsigned not_used0 : 1;       // = 0x00000200;
+        unsigned not_used1 : 1;       // = 0x00000400;
+        unsigned not_used2 : 1;       // = 0x00000800;
+        unsigned not_used3 : 1;       // = 0x00001000;
+        unsigned not_used4 : 1;       // = 0x00002000;
+        unsigned not_used5 : 1;       // = 0x00004000;
+        unsigned err_timeout : 1;     // = 0x00008000;
+      };
+    } m_status{};
 
     // enum motor_state: uint8_t
     // {
@@ -101,7 +98,7 @@ namespace MOTOR
     volatile uint32_t step_count; //
     volatile uint32_t count;
     volatile bool move_done;
-    //volatile uint8_t state;
+    // volatile uint8_t state;
 
     /*
       volatile uint32_t steps_per_s;  // Steps per second
@@ -119,13 +116,21 @@ namespace MOTOR
     prc_step_t m_step;
     cfg_t m_cfg;
     // bool m_enable;
+  protected:
+    static constexpr uint16_t def_org_fast_interrupt_time_us = 10;
+    static constexpr uint16_t def_org_slow_interrupt_time_us = 500;
+    static constexpr uint16_t def_default_offset_pulse = 300;
+
+    static constexpr int def_motor_pulse_per_resolution = 1600; // Motor pulses per revolution, motor step 1.8 degree, tmc2209 microstep 1/8
+    static constexpr int def_motor_max_rpm = 500;               // Maximum motor RPM
+    static constexpr int def_motor_accel_time_ms = 200;         // Acceleration and deceleration time
 
   public:
     enStepMotor() : accel_index{}, vel_index{}, decel_index{}, dir{},
                     step_position{}, total_steps{}, speed{}, step_count{}, count{}, move_done{true},
-                    /*state{},*/ m_step{}, m_cfg{} /*, m_enable{}*/{
+                    /*state{},*/ m_step{}, m_cfg{} /*, m_enable{}*/ {
 
-                                       };
+                                           };
     ~enStepMotor(){};
     /*
       enStepMotor (const enStepMotor &other){};
@@ -144,7 +149,7 @@ namespace MOTOR
     void S_curve_gen(int steps);
 
   public:
-    inline void Init(cfg_t &cfg)
+    inline error_t Init(cfg_t &cfg)
     {
       // Initialize GPIO
 
@@ -158,10 +163,12 @@ namespace MOTOR
 
       timAttachCB(cfg.timer_id, this, ISR_axis);
       m_cfg = cfg;
-      m_cfg.org_offset_cnt = 600;
-      //state = motor_stop;
+      m_cfg.org_offset_cnt = def_default_offset_pulse;
+      // state = motor_stop;
 
       Disable();
+      LOG_PRINT("[OK] Init Success! stepmotor[%d] !", m_cfg.obj_idx);
+      return ERROR_SUCCESS;
     };
 
     /*
@@ -173,8 +180,7 @@ namespace MOTOR
     e 1/16
     */
 
-
-    #if 0
+#if 0
     /* test code 1cycle for and backward*/
     inline void test_stepper_constant_accel()
     {
@@ -233,7 +239,7 @@ namespace MOTOR
 
       state = motor_stop;
     }
-   #endif
+#endif
 
     inline void test_constant_run(int steps, uint32_t time)
     {
@@ -257,15 +263,16 @@ namespace MOTOR
 
       m_step.SetStep(0);
 
+      vel_index = def_org_fast_interrupt_time_us; // timer interrupt us
+
       timEnableISR(m_cfg.timer_id);
+      LOG_PRINT("Start Org"); 
       return ERROR_SUCCESS;
     }
 
     bool ProcessZeroSet();
 
     errno_t Run(int steps, uint32_t speed);
-    void SetStep(int steps, uint32_t speed);
-    void SetRel(int steps, uint32_t speed);
 
     // void RunAndWait();
 
@@ -276,24 +283,27 @@ namespace MOTOR
 
     inline void Enable()
     {
-      //m_enable = true;
+      // m_enable = true;
       m_status.motor_enabled = true;
       HAL_GPIO_WritePin(m_cfg.gpio_port_enable, m_cfg.gpio_pin_enable, GPIO_PIN_RESET);
     };
 
     inline void Disable()
     {
-     //m_enable = false;
-      Stop();
+      // m_enable = false;
+      //Stop();
       m_status.motor_enabled = false;
       HAL_GPIO_WritePin(m_cfg.gpio_port_enable, m_cfg.gpio_pin_enable, GPIO_PIN_SET);
     };
 
+  private:
+    void SetStep(int steps, uint32_t speed);
+    void SetRel(int steps, uint32_t speed);
     inline void StepPulse()
     {
       // LL_GPIO_SetOutputPin(GPIOB, LL_GPIO_PIN_13);
       // LL_GPIO_ResetOutputPin(GPIOB, LL_GPIO_PIN_13);
-     //HAL_GPIO_WritePin(m_cfg.gpio_port_step, m_cfg.gpio_pin_step, GPIO_PIN_SET);
+      // HAL_GPIO_WritePin(m_cfg.gpio_port_step, m_cfg.gpio_pin_step, GPIO_PIN_SET);
       HAL_GPIO_WritePin(m_cfg.gpio_port_step, m_cfg.gpio_pin_step, GPIO_PIN_RESET);
       delay_us(1);
       HAL_GPIO_WritePin(m_cfg.gpio_port_step, m_cfg.gpio_pin_step, GPIO_PIN_SET);
@@ -313,8 +323,7 @@ namespace MOTOR
 
     static void ISR_axis(void *obj, void *w_param, void *l_param);
 
-    inline static void ISR_axis(void){  
-       };
+    inline static void ISR_axis(void){};
   };
   // end of class
 

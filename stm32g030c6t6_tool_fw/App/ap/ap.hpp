@@ -31,8 +31,11 @@
 #include "ap_reg.hpp"
 #include "ap_io.hpp"
 
+#ifdef _USE_EXHW_IICOMM_DEV
 #include "iic_cmd.hpp"
-//#include "uart_cmd.hpp"
+#else
+#include "uart_cmd.hpp"
+#endif
 
 // engine
 #include "enBtn.hpp"
@@ -43,12 +46,13 @@
 
 //control
 #include "cnMotors.hpp"
-#include "cnAuto.hpp"
+//#include "cnAuto.hpp"
 #include "cnTasks.hpp"
 
 //machine test
-//#include "api_cmd.hpp"
-
+#ifndef _USE_EXHW_IICOMM_DEV
+#include "api_cmd.hpp"
+#endif
 
 
 void  apInit(void);

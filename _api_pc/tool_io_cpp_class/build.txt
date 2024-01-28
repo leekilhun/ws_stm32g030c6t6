@@ -1,0 +1,16 @@
+사용법: cl [ option... ] filename... [ /link linkoption... ]
+
+build cmd
+
+cl /EHsc /std:c++17 cppmain.cpp framework/app/ap.cpp framework/common/mccLog.cpp framework/common/mccUtils.cpp -I ./framework -I ./framework/app -I ./framework/app/_inc -I ./framework/common -I ./framework/hw -I ./framework/hw/_inc /Fe: m.exe 
+
+
+
+cl /EHsc /std:c++20 filename.cpp /Fe: m.exe /I "C:\tools\opencv\build\include" 
+
+
+
+C:\_repositories\ws_vscode\ws_cpp_library\json>cl /EHsc /std:c++20 json4.cpp /Fe: m.exe
+/out:m.exe
+json4.obj
+C:\_repositories\ws_vscode\ws_cpp_library\json>m >> out2.txt
