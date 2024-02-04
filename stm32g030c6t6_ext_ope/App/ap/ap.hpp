@@ -24,6 +24,12 @@
 #include "ap_dat.hpp"
 
 #include "ap_reg.hpp"
+#include "ap_io.hpp"
+#include "enLed.hpp"
+#include "enBtn.hpp"
+
+#include "enOp.hpp"
+#include "enWheel.hpp"
 
 void  apInit(void);
 void  apMain(void);

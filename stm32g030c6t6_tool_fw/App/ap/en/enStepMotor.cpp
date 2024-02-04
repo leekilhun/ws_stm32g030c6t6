@@ -14,8 +14,6 @@
 
 #include "enStepMotor.hpp"
 
-using namespace MOTOR;
-
 static uint8_t remaining_flag {};
 
 

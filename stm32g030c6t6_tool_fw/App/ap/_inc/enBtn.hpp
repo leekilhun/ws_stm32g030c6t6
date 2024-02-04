@@ -11,7 +11,6 @@
 
 #include "ap_def.hpp"
 
-#ifdef _USE_APP_ENBTN
 
 struct enBtn
 {
@@ -23,6 +22,13 @@ struct enBtn
     uint32_t repeat_time_delay{};  // unit 10ms, long key count
     uint32_t repeat_time{};        // unit 10ms, middle key count
     char name_str[32]{};
+
+    char *set_name(const char *name)
+    {
+      memset(&name_str[0], 0, sizeof(name_str));
+      strlcpy(&name_str[0], name, sizeof(name_str));
+      return &name_str[0];
+    }
 
     cfg_t() = default;
     // copy constructor
@@ -92,14 +98,24 @@ public:
     return !IsPressed();
   }
 
-  inline bool IsShortKey() const
+  inline bool IsShortKey() 
   {
-    return (m_repeat_cnt == 1);
+    if (m_repeat_cnt == 1)
+    {
+      ResetEvent();
+      return true;
+    }
+    return false;
   }
 
-  inline bool IsLongKey() const
+  inline bool IsLongKey() 
   {
-    return (m_repeat_cnt > 10);
+    if ((m_repeat_cnt > 10))
+    {
+      ResetEvent();
+      return true;
+    }
+    return false;
   }
 
   inline void ResetEvent()
@@ -218,6 +234,5 @@ public:
   }
 };
 
-#endif /* _USE_APP_ENBTN */
 
 #endif /* AP__INC_ENBTN_HPP_ */

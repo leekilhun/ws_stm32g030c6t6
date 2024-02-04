@@ -48,6 +48,7 @@
 typedef void (*evt_cb)(void* obj, void* w_parm, void* l_parm);
 
 
+//#define CMD_PART_MAIN
 
 //#define _USE_AP_MACHINE_TEST
 #define  _USE_APP_ENBTN

@@ -10,55 +10,52 @@
 
 
 
-#define AP_DEF_OBJ_BASE_MOTOR                   0x0010
-#define AP_DEF_OBJ_BASE_CYLINDER                0x0100
-#define AP_DEF_OBJ_BASE_VACUUM                  0x0120
-#define AP_DEF_OBJ_BASE_BUTTON                  0x0140
-#define AP_DEF_OBJ_BASE_LED		                  0x0160
+#define AP_DEF_OBJ_BASE_MOTOR                    0x00000010
+#define AP_DEF_OBJ_BASE_STP_MOTOR                0x00000050
+#define AP_DEF_OBJ_BASE_CYLINDER                 0x00000100
+#define AP_DEF_OBJ_BASE_VACUUM                   0x00000150
 
-#define AP_DEF_OBJ_BASE_IO                      0x0140
-#define AP_DEF_START_IN_ADDR                    1000
-#define AP_DEF_START_OUT_ADDR                   3000
+#define AP_DEF_OBJ_BASE_IO                       0x00000140
 
-#if 1
+#define AP_DEF_START_IN_ADDR                     1000
+#define AP_DEF_START_OUT_ADDR                    3000
+
 #define AP_DEF_OBJ_MOTOR_ID_BASE                1
 #define M_SetMotorId(instance_no)               AP_DEF_OBJ_MOTOR_ID_BASE + instance_no
 #define M_GetMotorInstanceId(node_id)           node_id - AP_DEF_OBJ_MOTOR_ID_BASE
-#define M_GetMotorObjId(obj)                    AP_DEF_OBJ_BASE_MOTOR|obj
+#define M_GetMotorObjIdx(obj)                    AP_DEF_OBJ_BASE_MOTOR|obj
+#define M_GetStpMotorObjIdx(obj)                 AP_DEF_OBJ_BASE_STP_MOTOR|obj
+#define M_GetCylinderObjIdx(obj)                 AP_DEF_OBJ_BASE_CYLINDER|obj
+#define M_GetVacuumObjIdx(obj)                   AP_DEF_OBJ_BASE_VACUUM|obj
 
-#define M_GetCylinderObjId(obj)              		AP_DEF_OBJ_BASE_CYLINDER|obj
-
-#define GetVacObjId(obj)                     		AP_DEF_OBJ_BASE_VACUUM|obj
-#define GetButtonObjId(obj)                     AP_DEF_OBJ_BASE_BUTTON|obj
-#define GetLedLampObjId(obj)                    AP_DEF_OBJ_BASE_LED|obj
-
-#endif
 
 namespace AP_OBJ
 {
-	enum MOTOR
-	{
-		MOTOR_A, // left step motor
-		MOTOR_B, // right step motor
-		MOTOR_C, // center step motor
-		MOTOR_MAX,
+	// enum MOTOR
+	// {
+	// 	MOTOR_A, // left step motor
+	// 	MOTOR_B, // right step motor
+	// 	MOTOR_C, // center step motor
+	// 	MOTOR_MAX,
 
-	};
+	// };
 	
   enum LED
   {
-    LED_STATUS,
-    // LED_OP_G_READY,
-    // LED_OP_Y_BUSY,
-    // LED_OP_R_ERROR,
+    LED_OP_G_START,
+    LED_OP_R_STOP,
+    LED_OP_Y_RESET,
+    LED_TOWER_GREEN,
+    LED_TOWER_YELLOW,
+    LED_TOWER_RED,
     LED_MAX,
   };
-
 	  enum BTN
   {
-    // BTN_START,
-    // BTN_RESET,
-    // BTN_STOP,
+    BTN_OP_START,
+    BTN_OP_STOP,
+    BTN_OP_RESET,
+    BTN_OP_ESTOP,
     BTN_MAX,
   };
 

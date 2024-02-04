@@ -29,8 +29,8 @@
 #ifdef  _USE_HW_TIM
 #define      HW_TIM_MAX_CH          3
 #define        _TIM_3               _DEF_TIM1
-#define        _TIM_14               _DEF_TIM2
-#define        _TIM_16               _DEF_TIM3
+#define        _TIM_14              _DEF_TIM2
+#define        _TIM_16              _DEF_TIM3
 #endif
 
 
@@ -49,9 +49,9 @@
 
 //#define  _USE_HW_IIC_S
 #define       HW_IIC_S_MAX_CH       1
- #define        _IIC_SLAVE          _DEF_IIC_S1
- #define _USE_HW_IIC_S_1_DMA_RX
- #define _USE_HW_IIC_S_1_DMA_TX
+#define        _IIC_SLAVE          _DEF_IIC_S1
+#define _USE_HW_IIC_S_1_DMA_RX
+#define _USE_HW_IIC_S_1_DMA_TX
 
 
 #endif /* HW_HW_DEF_H_ */

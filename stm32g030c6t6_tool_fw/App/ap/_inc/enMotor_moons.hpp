@@ -11,9 +11,6 @@
 
 #include "ap_def.hpp"
 
-namespace MOTOR
-{
-
 	constexpr uint16_t MODBUS_MULTIPLE_PARAM_VEL = 4;//240;
 	constexpr uint16_t MODBUS_MULTIPLE_PARAM_ACC = 6;
 	constexpr uint8_t MODBUS_FAIL_RETRY_CNT_MAX = 3;
@@ -688,9 +685,6 @@ namespace MOTOR
 
 	}; // end of class
 
-
-
-} // end of namespace
 
 
 

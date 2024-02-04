@@ -3,6 +3,8 @@
  *
  *  Created on: 2023. 6. 10.
  *      Author: gns2l
+ * 
+ *  edit : 24.02.03 ext_op
  */
 
 #pragma once
@@ -10,6 +12,8 @@
 #define AP__INC_ENOP_HPP_
 
 #include "ap_def.hpp"
+
+#ifdef _USE_APP_ENOP
 
 struct enOp
 {
@@ -40,27 +44,37 @@ struct enOp
 
   enum lamp_e :uint8_t
   {
-    LAMP_READY = 0x40,
-    LAMP_BUSY,
-    LAMP_ERROR,
+    LAMP_START = 0x40,
+    LAMP_STOP,
+    LAMP_RESET,
+    LAMP_ALL
   };
 
   struct cfg_t
   {
-  	ap_reg* ptr_mcu_reg{};
-  	ap_io * ptr_mcu_io{};
+    ap_reg *ptr_mcu_reg{};
+    ap_io  *ptr_mcu_io{};
 
-    enLed* ptr_led_status{};
-    enLed* ptr_led_op_g{};
-    enLed* ptr_led_op_y{};
-    enLed* ptr_led_op_r{};
+    enLed *ptr_led_status{};
+    enLed *ptr_led_op_g{};
+    enLed *ptr_led_op_y{};
+    enLed *ptr_led_op_r{};
 
-    enBtn* ptr_btn_start{};
-    enBtn* ptr_btn_stop{};
-    enBtn* ptr_btn_reset{};
-    enBtn* ptr_btn_estop{};
+    enBtn *ptr_btn_start{};
+    enBtn *ptr_btn_stop{};
+    enBtn *ptr_btn_reset{};
+    enBtn *ptr_btn_estop{};
 
-  	cfg_t() = default;
+    GPIO_TypeDef *tower_buzzer_gpio_port{};
+    uint16_t      tower_buzzer_gpio_pin{};
+
+    GPIO_TypeDef *sensor_safety_1_gpio_port{};
+    uint16_t      sensor_safety_1_gpio_pin{};
+
+    GPIO_TypeDef *sensor_safety_2_gpio_port{};
+    uint16_t      sensor_safety_2_gpio_pin{};
+
+    cfg_t() = default;
 
     // copy constructor
     cfg_t(const cfg_t& rhs) = default;
@@ -70,7 +84,6 @@ struct enOp
     cfg_t(cfg_t&& rhs) = default;
     // move assignment operator
     cfg_t& operator=(cfg_t&& rhs) = default;
-
   };
 
   volatile enOp::status_e m_status;
@@ -99,9 +112,9 @@ public:
       case enOp::ERR_STOP:
         break;
       case enOp::STEP_STOP:
-        LampOnOff(enOp::LAMP_READY, false);
-        LampOnOff(enOp::LAMP_BUSY, false);
-        LampOnOff(enOp::LAMP_ERROR, false);
+        LampOnOff(enOp::LAMP_START, false);
+        LampOnOff(enOp::LAMP_STOP, false);
+        LampOnOff(enOp::LAMP_RESET, false);
         break;
       case enOp::RUN_READY:
         break;
@@ -117,7 +130,7 @@ public:
       switch (state)
       {
       case enOp::ERR_STOP:
-        LampOnOff(enOp::LAMP_ERROR);
+        LampOnOff(enOp::LAMP_STOP);
         break;
       case enOp::STEP_STOP:   
       case enOp::RUN_READY:
@@ -145,41 +158,46 @@ public:
   {
     switch (lamp)
     {
-    case LAMP_READY:
-        state ? m_cfg.ptr_led_op_g->On() : m_cfg.ptr_led_op_g->Off();
-        break;
-    case LAMP_BUSY:
-        state ? m_cfg.ptr_led_op_y->On() : m_cfg.ptr_led_op_y->Off();
-        break;
-    case LAMP_ERROR:
-        state ? m_cfg.ptr_led_op_r->On() : m_cfg.ptr_led_op_r->Off();
-        break;
+    case LAMP_START:
+      state ? m_cfg.ptr_led_op_g->On() : m_cfg.ptr_led_op_g->Off();
+      break;
+    case LAMP_STOP:
+      state ? m_cfg.ptr_led_op_r->On() : m_cfg.ptr_led_op_r->Off();
+      break;
+    case LAMP_RESET:
+      state ? m_cfg.ptr_led_op_y->On() : m_cfg.ptr_led_op_y->Off();
+      break;
     default:
-        break;
+      break;
     };
   }
 
-  inline void LampToggle(lamp_e lamp){
-    switch (lamp) {
-      case LAMP_READY:
-      	m_cfg.ptr_led_op_g->Toggle();
-        break;
-      case LAMP_BUSY:
-      	m_cfg.ptr_led_op_y->Toggle();
-        break;
-      case LAMP_ERROR:
-      	m_cfg.ptr_led_op_r->Toggle();
-        break;
-      default:
-        break;
+  inline void LampToggle(lamp_e lamp)
+  {
+    switch (lamp)
+    {
+    case LAMP_START:
+      m_cfg.ptr_led_op_g->Toggle();
+      break;
+    case LAMP_STOP:
+      m_cfg.ptr_led_op_r->Toggle();
+      break;
+    case LAMP_RESET:
+      m_cfg.ptr_led_op_y->Toggle();
+      break;
+    case LAMP_ALL:
+      m_cfg.ptr_led_op_r->Toggle();
+      m_cfg.ptr_led_op_g->Toggle();
+      m_cfg.ptr_led_op_y->Toggle();
+      break;
+    default:
+      break;
     };
   }
-
-
 };
 
 
-
+#endif /* _USE_APP_ENOP */
 
 
 #endif /* AP__INC_ENOP_HPP_ */

@@ -40,9 +40,9 @@ namespace toolsys
   constexpr uint8_t CMD_STX0 = 0x4A;
   constexpr uint8_t CMD_STX1 = 0x4C;
 
-  constexpr int CMD_MAX_DATA_LENGTH = 120;
+  constexpr int CMD_MAX_DATA_LENGTH   = 120;
   constexpr int CMD_MAX_PACKET_LENGTH = (CMD_MAX_DATA_LENGTH + 8);
-  constexpr int PACKET_BUFF_LENGTH = CMD_MAX_PACKET_LENGTH;
+  constexpr int PACKET_BUFF_LENGTH    = CMD_MAX_PACKET_LENGTH;
 
   struct state_reg_st
   {
@@ -419,45 +419,45 @@ namespace toolsys
   struct mcu_tool_data_align_48_t
   {
   private:
-    static constexpr auto io_dword_max = 1;
+    static constexpr auto io_dword_max    = 1;
     static constexpr auto motor_dword_max = 3;
-    static constexpr auto data_dword_max = 2;
+    static constexpr auto data_dword_max  = 2;
 
   public:
     enum dat_addr : uint8_t
     {
-      addr_system = 0,
-      addr_state = 2,
-      addr_option = 4,
-      addr_err = 8,
-      addr_io_in_0 = 12,
-      addr_io_out_0 = 16,
-      addr_motor_cnt = 20,
-      addr_motor_reserved = 22,
-      addr_motor_pulse_0 = 24,
-      addr_motor_pulse_1 = 28,
-      addr_motor_pulse_2 = 32,
-      addr_motor_state_0 = 36,
-      addr_motor_state_1 = 38,
-      addr_motor_state_2 = 40,
+      addr_system          = 0,
+      addr_state           = 2,
+      addr_option          = 4,
+      addr_err             = 8,
+      addr_io_in_0         = 12,
+      addr_io_out_0        = 16,
+      addr_motor_cnt       = 20,
+      addr_motor_reserved  = 22,
+      addr_motor_pulse_0   = 24,
+      addr_motor_pulse_1   = 28,
+      addr_motor_pulse_2   = 32,
+      addr_motor_state_0   = 36,
+      addr_motor_state_1   = 38,
+      addr_motor_state_2   = 40,
       addr_motor_reserved2 = 42,
-      addr_datas_0 = 44,
-      addr_datas_1 = 46,
+      addr_datas_0         = 44,
+      addr_datas_1         = 46,
     };
-    uint16_t reg_sys{};                                   //
-    uint16_t reg_state{};                                 //
-    uint32_t reg_option{};                                //
-    uint32_t reg_err{};                                   //
-    std::array<uint32_t, io_dword_max> io_in{};           //
-    std::array<uint32_t, io_dword_max> io_out{};          //
-    uint16_t motor_cnt{};                                 //
-    uint16_t motor_reserved{};                            // 24
-    std::array<uint32_t, motor_dword_max> motor_pulse{};  // 36
-    std::array<uint16_t, motor_dword_max> motor_status{}; //
-    uint16_t motor_reserved2{};                           // 44
-    std::array<uint16_t, data_dword_max> datas{};         // 48
+    uint16_t                              reg_sys{};         //
+    uint16_t                              reg_state{};       //
+    uint32_t                              reg_option{};      //
+    uint32_t                              reg_err{};         //
+    std::array<uint32_t, io_dword_max>    io_in{};           //
+    std::array<uint32_t, io_dword_max>    io_out{};          //
+    uint16_t                              motor_cnt{};       //
+    uint16_t                              motor_reserved{};  // 24
+    std::array<uint32_t, motor_dword_max> motor_pulse{};     // 36
+    std::array<uint16_t, motor_dword_max> motor_status{};    //
+    uint16_t                              motor_reserved2{}; // 44
+    std::array<uint16_t, data_dword_max>  datas{};           // 48
 
-    mcu_tool_data_align_48_t() = default;
+    mcu_tool_data_align_48_t()  = default;
     ~mcu_tool_data_align_48_t() = default;
     // copy constructor
     mcu_tool_data_align_48_t(const mcu_tool_data_align_48_t &rhs) = default;
@@ -476,7 +476,7 @@ namespace toolsys
     {
       serial_comm *ptr_uart_comm{nullptr};
 
-      cfg_t() = default;
+      cfg_t()  = default;
       ~cfg_t() = default;
 
       // copy constructor
@@ -493,47 +493,46 @@ namespace toolsys
     enum RX_TYPE : uint16_t
     {
       RX_OK_RESPONSE = 0x0000,
-      RX_TOOL_DATA = 0x0001,
-      RX_TOOL_INFO = 0x0002,
+      RX_TOOL_DATA   = 0x0001,
+      RX_TOOL_INFO   = 0x0002,
     };
 
-    enum TX_TYPE : uint16_t
+    enum class TX_TYPE : uint16_t
     {
-      TX_OK_RESPONSE = 0x0000,
+      TX_OK_RESPONSE    = 0x0000,
       TX_READ_TOOL_DATA = 0x0001,
       TX_READ_TOOL_INFO = 0x0002,
-
-      TX_CTRL_IO_OUT = 0x0010,
-      TX_CTRL_CYL = 0x0011,
-      TX_CTRL_VAC = 0x0012,
+      //
+      TX_CTRL_IO_OUT     = 0x0010,
+      TX_CTRL_CYL        = 0x0011,
+      TX_CTRL_VAC        = 0x0012,
       TX_CTRL_REG_OPTION = 0x0013,
-
+      //
       TX_CTRL_INITIALIZE = 0x001A,
       TX_CTRL_VIRTUAL_SW = 0x001B,
-
-      TX_CTRL_MOT_ORIGIN = 0x0020,
-      TX_CTRL_MOT_ONOFF = 0x0021,
-      TX_CTRL_MOT_MOVE = 0x0022,
-      TX_CTRL_MOT_STOP = 0x0023,
-      TX_CTRL_MOT_JOG = 0x0024,
-      TX_CTRL_MOT_LIMIT = 0x0025,
-      TX_CTRL_MOT_ZEROSET = 0x0026,
-      TX_CTRL_MOT_RELMOVE = 0x0027,
+      //
+      TX_CTRL_MOT_ORIGIN      = 0x0020,
+      TX_CTRL_MOT_ONOFF       = 0x0021,
+      TX_CTRL_MOT_MOVE        = 0x0022,
+      TX_CTRL_MOT_STOP        = 0x0023,
+      TX_CTRL_MOT_JOG         = 0x0024,
+      TX_CTRL_MOT_LIMIT       = 0x0025,
+      TX_CTRL_MOT_ZEROSET     = 0x0026,
+      TX_CTRL_MOT_RELMOVE     = 0x0027,
       TX_CTRL_MOT_CLEAR_ALARM = 0x0028,
-      TX_CTRL_MOT_CHANGE_VEL = 0x0029,
-      TX_CTRL_MOT_MOVE_VEL = 0x002A,
+      TX_CTRL_MOT_CHANGE_VEL  = 0x0029,
+      TX_CTRL_MOT_MOVE_VEL    = 0x002A,
       TX_CTRL_MOT_RELMOVE_VEL = 0x002B,
-      TX_CTRL_MOT_VEL_JOG = 0x002C,
+      TX_CTRL_MOT_VEL_JOG     = 0x002C,
 
-      TX_CTRL_TOOL_PnP = 0x0040,
+      TX_CTRL_TOOL_PnP    = 0x0040,
       TX_MODE_FW_DOWNLOAD = 0xF000,
-
     };
 
     enum tool_PnP_order_e : int16_t
     {
-      TOOL_CMD_ERR_RET = -1,
-      TOOL_CMD_NONE = 0,
+      TOOL_CMD_ERR_RET          = -1,
+      TOOL_CMD_NONE             = 0,
       TOOL_CMD_ORD_MOTOR_ENABLE = 1,
       TOOL_CMD_ORD_MOTOR_DISABLE,
       TOOL_CMD_ORD_MOTOR_RUN,
@@ -543,18 +542,18 @@ namespace toolsys
 
     struct packet_st
     {
-      uint16_t type{};
-      uint16_t obj_id{};
-      uint16_t data_length{};
-      uint8_t *data{};
-      uint8_t checksum{};
-      uint8_t checksum_recv{};
+      uint16_t                                   type{};
+      uint16_t                                   obj_id{};
+      uint16_t                                   data_length{};
+      uint8_t                                   *data{};
+      uint8_t                                    checksum{};
+      uint8_t                                    checksum_recv{};
       std::array<uint8_t, CMD_MAX_PACKET_LENGTH> buffer{};
-      uint8_t buffer_idx{};
-      uint16_t data_cnt{};
-      uint32_t resp_ms{};
-      bool wait_resp{};
-      step::state_st<> state{};
+      uint8_t                                    buffer_idx{};
+      uint16_t                                   data_cnt{};
+      uint32_t                                   resp_ms{};
+      bool                                       wait_resp{};
+      step::state_st<>                           state{};
       packet_st() {}
 
       // copy constructor
@@ -574,9 +573,9 @@ namespace toolsys
 
       uint8_t BufferAdd(uint8_t rx_data)
       {
-        checksum += rx_data;
-        buffer[buffer_idx] = rx_data;
-        buffer_idx = (buffer_idx + 1) % PACKET_BUFF_LENGTH;
+        checksum           += rx_data;
+        buffer[buffer_idx]  = rx_data;
+        buffer_idx          = (buffer_idx + 1) % PACKET_BUFF_LENGTH;
         return buffer_idx;
       }
 
@@ -584,8 +583,8 @@ namespace toolsys
       {
         buffer.fill(0);
         buffer_idx = 0;
-        data_cnt = 0;
-        checksum = 0;
+        data_cnt   = 0;
+        checksum   = 0;
         state.SetStep(0);
       }
     };
@@ -596,24 +595,24 @@ namespace toolsys
       std::string name{};
     };
 
-    bool m_is_init;
+    bool  m_is_init;
     cfg_t m_cfg;
 
-    err_reg_st m_errorReg;
-    otp_reg_st m_optionReg;
-    state_reg_st m_stateReg;
-    io_in_reg_st m_inReg;
+    err_reg_st    m_errorReg;
+    otp_reg_st    m_optionReg;
+    state_reg_st  m_stateReg;
+    io_in_reg_st  m_inReg;
     io_out_reg_st m_outReg;
 
     packet_st m_packetData;
 
-    std::thread m_trd;
-    std::atomic<bool> m_stopThread;
+    std::thread                        m_trd;
+    std::atomic<bool>                  m_stopThread;
     std::function<int(void *, void *)> m_cb;
-    std::mutex m_mutex;
-    uint32_t m_msgTime;
-    tools_info_st m_toolsInfo;
-    mcu_tool_data_align_48_t m_toolData{};
+    std::mutex                         m_mutex;
+    uint32_t                           m_msgTime;
+    tools_info_st                      m_toolsInfo;
+    mcu_tool_data_align_48_t           m_toolData{};
 
   public:
     ModuleTool() : m_is_init{}, m_cfg{}, m_errorReg{}, m_optionReg{}, m_stateReg{}, m_inReg{}, m_outReg{}, m_packetData{}, m_trd{}, m_stopThread{}, m_cb{}, m_mutex{}, m_msgTime{}, m_toolsInfo{}, m_toolData{}
@@ -634,11 +633,11 @@ namespace toolsys
 
       auto putData = [&](const mcu_tool_data_align_48_t &data)
       {
-        m_errorReg.ap_error = data.reg_err;
+        m_errorReg.ap_error   = data.reg_err;
         m_optionReg.ap_option = data.reg_option;
-        m_stateReg.ap_state = data.reg_state;
-        m_inReg.in_reg = data.io_in[0];
-        m_outReg.out_reg = data.io_out[0];
+        m_stateReg.ap_state   = data.reg_state;
+        m_inReg.in_reg        = data.io_in[0];
+        m_outReg.out_reg      = data.io_out[0];
       };
 
       std::cout << std::dec;
@@ -684,7 +683,7 @@ namespace toolsys
       if (w_parm == nullptr)
         return -1;
       int length = *((int *)w_parm);
-      int index = 0;
+      int index  = 0;
 
       for (index = 0; index < length; index++)
       {
@@ -692,7 +691,7 @@ namespace toolsys
         if (receivePacket(data))
         {
           m_packetData.wait_resp = false;
-          m_packetData.resp_ms = tim::millis() - m_msgTime;
+          m_packetData.resp_ms   = tim::millis() - m_msgTime;
           processCplt();
         }
       }
@@ -802,7 +801,7 @@ namespace toolsys
 
       case STATE_WAIT_CHECKSUM:
         m_packetData.checksum_recv = rx_data;
-        m_packetData.checksum = (~m_packetData.checksum) + 1;
+        m_packetData.checksum      = (~m_packetData.checksum) + 1;
         m_packetData.state.SetStep(STATE_WAIT_STX0);
         // std::cout << "STATE_WAIT_CHECKSUM  checksum_recv [0x" << std::hex << (int)m_packetData.checksum_recv
         //<<"] ,  cal checksum [0x"<< int(m_packetData.checksum) << "] "<<std::endl;
@@ -844,7 +843,7 @@ namespace toolsys
        | 0x4A | 0x4C | 2byte | 2byte | 2 byte      |Data 0～n | 1byte    |
       */
 
-      std::vector<uint8_t> datas{CMD_STX0, CMD_STX1};
+      std::vector<uint8_t> datas{};
       for (uint32_t i = 0; i < length; i++)
         datas.emplace_back(p_data[i]);
 
@@ -870,7 +869,7 @@ namespace toolsys
     {
       if (SendCmd(p_data, length) == ERROR_SUCCESS)
       {
-        uint32_t pre_ms = tim::millis();
+        uint32_t pre_ms        = tim::millis();
         m_packetData.wait_resp = true;
         while (m_packetData.wait_resp)
         {
@@ -896,18 +895,174 @@ namespace toolsys
       return 0;
     }
 
+    template <typename Type, typename... ElementType>
+    errno_t SendOrder(Type type, ElementType... elements)
+    {
+      if constexpr (std::is_same_v<Type, TX_TYPE>)
+      {
+        std::array<uint8_t, CMD_MAX_PACKET_LENGTH> datas = {};
+        enum : uint8_t
+        {
+          idx_stx0,
+          idx_stx1,
+          idx_type_l,
+          idx_type_h,
+          idx_objid_l,
+          idx_objid_h,
+          idx_length_l,
+          idx_length_h,
+          idx_data
+        };
+
+        // constexpr uint16_t obj_id   = 0x0000;
+        uint16_t length    = 0;
+        uint16_t cmd_type  = static_cast<uint16_t>(type);
+        datas[idx_stx0]    = CMD_STX0;
+        datas[idx_stx1]    = CMD_STX1;
+        datas[idx_type_l]  = LoBYTE(cmd_type);
+        datas[idx_type_h]  = HiBYTE(cmd_type);
+        datas[idx_objid_l] = 0;
+        datas[idx_objid_h] = 0;
+        if constexpr (sizeof...(elements) == 0)
+        {
+          switch (type)
+          {
+          case TX_TYPE::TX_OK_RESPONSE:      __fallthrough;
+          case TX_TYPE::TX_READ_TOOL_DATA:   __fallthrough;
+          case TX_TYPE::TX_READ_TOOL_INFO:   __fallthrough;
+          case TX_TYPE::TX_CTRL_INITIALIZE:
+            __fallthrough;
+            break;
+
+          default:
+            LOG_PRINT("Error! Wrong type.");
+            return -1;
+            break;
+          }
+        }
+        else
+        {
+          using ele_t                                   = std::common_type_t<ElementType...>;
+          std::array<ele_t, sizeof...(elements)> values = {elements...};
+
+          auto set_data = [&packet = datas](auto offset, auto src)
+          {
+            std::memcpy(&packet[idx_data + offset], &src, sizeof(src));
+            return sizeof(src);
+          };
+
+          if constexpr (sizeof...(elements) == 1)
+          {
+
+            switch (type)
+            {
+            case TX_TYPE::TX_CTRL_IO_OUT:          __fallthrough;
+            case TX_TYPE::TX_CTRL_VIRTUAL_SW:      __fallthrough;
+            case TX_TYPE::TX_CTRL_MOT_STOP:        __fallthrough;
+            case TX_TYPE::TX_CTRL_MOT_ZEROSET:     __fallthrough;
+            case TX_TYPE::TX_CTRL_MOT_CLEAR_ALARM: __fallthrough;
+            case TX_TYPE::TX_CTRL_MOT_ORIGIN:      __fallthrough;
+            case TX_TYPE::TX_MODE_FW_DOWNLOAD:     __fallthrough;
+            case TX_TYPE::TX_CTRL_MOT_LIMIT:       
+              // length = sizeof(int);
+              // std::memcpy(&datas[idx_data], (uint8_t *)&arr[0], length);
+              length = set_data(0, (uint32_t)values[0]);
+              break;
+
+            case TX_TYPE::TX_CTRL_REG_OPTION:
+              length = set_data(0, (uint16_t)values[0]);
+              break;
+
+            default:
+              LOG_PRINT("Error! Wrong type.");
+              return -1;
+              break;
+            }
+          }
+          else if constexpr (sizeof...(elements) == 2)
+          {
+            switch (type)
+            {
+            case TX_TYPE::TX_CTRL_MOT_MOVE:    __fallthrough;
+            case TX_TYPE::TX_CTRL_MOT_RELMOVE: __fallthrough;
+            case TX_TYPE::TX_CTRL_MOT_ONOFF:   __fallthrough;
+            case TX_TYPE::TX_CTRL_MOT_JOG:
+            {
+              enum : uint8_t
+              {
+                _objid,
+                _data1
+              };
+              length  = set_data(length, (uint16_t)values[_objid]);
+              length += set_data(length, (int)values[_data1]);
+            }
+            break;
+            default:
+              LOG_PRINT("Error! Wrong type.");
+              return -1;
+            }            
+          }
+          else if constexpr (sizeof...(elements) == 3)
+          {
+          }
+          else if constexpr (sizeof...(elements) == 4)
+          {
+            if (type == TX_TYPE::TX_CTRL_TOOL_PnP)
+            {
+              enum : uint8_t
+              {
+                _order,
+                _objid,
+                _data1,
+                _datat2
+              };
+              length  = set_data(0, (uint16_t)values[_order]);
+              length += set_data(length, (uint16_t)values[_objid]);
+              length += set_data(length, (int)values[_data1]);
+              length += set_data(length, (int)values[_datat2]);
+            }
+            else
+            {
+              LOG_PRINT("Error! Wrong type.");
+              return -1;
+            }
+          }
+          else
+          {
+            LOG_PRINT("Error! Too many arguments.");
+            return -1;
+          }
+        }
+
+        datas[idx_length_l] = (uint8_t)(length >> 0);
+        datas[idx_length_h] = (uint8_t)(length >> 8);
+
+        uint32_t idx      = (uint32_t)idx_data + length;
+        uint8_t  checksum = 0;
+        for (const auto &elm : datas)
+          checksum += elm;
+        checksum   = (~checksum) + 1;
+        datas[idx] = checksum;
+
+        length = idx + 1;
+
+        return (SendCmdRxResp(datas.data(), length) ? ERROR_SUCCESS : -1);
+      }
+      else
+      {
+        LOG_PRINT("Error! Wrong type.");
+        return -1;
+      }
+
+      return -1;
+    }
+
     inline errno_t Ret_OkResponse()
     {
-      std::vector<uint8_t> datas{};
-      datas.emplace_back((uint8_t)(TX_OK_RESPONSE >> 0));
-      datas.emplace_back((uint8_t)(TX_OK_RESPONSE >> 8));
-      datas.emplace_back(0x00); // obj id l
-      datas.emplace_back(0x00); // obj id h
-      datas.emplace_back(0x00); // data length l
-      datas.emplace_back(0x00); // data length h
-
-      return (SendCmdRxResp(datas.data(), (uint32_t)datas.size()) ? ERROR_SUCCESS : -1);
+      return SendOrder(TX_TYPE::TX_OK_RESPONSE);
     }
+
+#if 0
 
     inline errno_t GetToolsInfo()
     {
@@ -974,8 +1129,8 @@ namespace toolsys
       else
         return -1;
     }
-    ///////////////////////////////////////////////////////////////////////////////////////
 
+    
     inline errno_t SetModeFwDownloadr()
     {
       std::vector<uint8_t> datas{};
@@ -1039,13 +1194,17 @@ namespace toolsys
       return (SendCmdRxResp(datas.data(), (uint32_t)datas.size()) ? ERROR_SUCCESS : -1);
     }
 
+#endif
+
+    ///////////////////////////////////////////////////////////////////////////////////////
+
     ///////////////////////////////////////////////////////////////////////////////////////
     inline int testCB_func(int argc, char *argv[])
     {
       auto get_data = [](char *int_ptr) -> int
       {
         int ret_idx = 0;
-        ret_idx = (int)strtoul((const char *)int_ptr, (char **)NULL, (int)0);
+        ret_idx     = (int)strtoul((const char *)int_ptr, (char **)NULL, (int)0);
         return ret_idx;
       };
 
@@ -1067,7 +1226,7 @@ namespace toolsys
         {
           if (std::string(argv[1]).compare("info") == 0)
           {
-            if (this->GetToolsInfo() == ERROR_SUCCESS)
+            if (this->SendOrder(TX_TYPE::TX_READ_TOOL_INFO) == ERROR_SUCCESS)
             {
               std::cout << "tools info [" << this << "] success " << std::endl;
               ret = true;
@@ -1077,7 +1236,7 @@ namespace toolsys
           }
           else if (std::string(argv[1]).compare("data") == 0)
           {
-            if (this->GetToolsData() == ERROR_SUCCESS)
+            if (this->SendOrder(TX_TYPE::TX_READ_TOOL_DATA) == ERROR_SUCCESS)
             {
               std::cout << "tools data [" << this << "] success " << std::endl;
               ret = true;
@@ -1087,7 +1246,8 @@ namespace toolsys
           }
           else if (std::string(argv[1]).compare("mode_fw") == 0)
           {
-            if (this->SetModeFwDownloadr() == ERROR_SUCCESS)
+            constexpr uint32_t FLASH_MAGIC_NUMBER  =     0x5555AAAA;
+            if (this->SendOrder(TX_TYPE::TX_MODE_FW_DOWNLOAD, FLASH_MAGIC_NUMBER) == ERROR_SUCCESS)
             {
               std::cout << "tools mode fw [" << this << "] success " << std::endl;
               ret = true;
@@ -1113,15 +1273,15 @@ namespace toolsys
             output.set(out_idx, true);
             // std::cout << "on_io set after [" << std::to_string((uint32_t)output.to_ulong()) << "] set" << std::endl;
 
-            if (this->SetIO_Output((uint32_t)output.to_ulong()) == ERROR_SUCCESS)
+            if (this->SendOrder(TX_TYPE::TX_CTRL_IO_OUT, (uint32_t)output.to_ulong()) == ERROR_SUCCESS)
             {
               std::cout << "on_io [" << std::to_string(out_idx) << "] success " << std::endl;
-              this->GetToolsData();
+              this->SendOrder(TX_TYPE::TX_READ_TOOL_DATA);
               ret = true;
             }
             else
               std::cout << "on_io fail" << std::endl;
-          }         
+          }
         }
       }
       break;
@@ -1152,10 +1312,10 @@ namespace toolsys
 
             if (ret)
             {
-              if (this->SetIO_Output((uint32_t)output.to_ulong()) == ERROR_SUCCESS)
+              if (this->SendOrder(TX_TYPE::TX_CTRL_IO_OUT, (uint32_t)output.to_ulong()) == ERROR_SUCCESS)
               {
                 std::cout << "set io output [" << std::to_string(out_idx) << "] success " << std::endl;
-                this->GetToolsData();
+                this->SendOrder(TX_TYPE::TX_READ_TOOL_DATA);
               }
               else
                 std::cout << "set output fail" << std::endl;
@@ -1186,10 +1346,10 @@ namespace toolsys
 
             if (ret)
             {
-              if (this->SetOptionReg((uint16_t)opt_bit.to_ulong()) == ERROR_SUCCESS)
+              if (this->SendOrder(TX_TYPE::TX_CTRL_REG_OPTION, (uint16_t)opt_bit.to_ulong()) == ERROR_SUCCESS)
               {
                 std::cout << "set option [" << std::to_string(reg_idx) << "] success " << std::endl;
-                this->GetToolsData();
+                this->SendOrder(TX_TYPE::TX_READ_TOOL_DATA);
               }
               else
                 std::cout << "set option fail" << std::endl;
@@ -1204,7 +1364,6 @@ namespace toolsys
         {
           if (std::string(argv[1]).compare("pnp") == 0)
           {
-            
           }
         }
       }
@@ -1226,7 +1385,7 @@ namespace toolsys
             uint8_t idx = get_data(argv[3]);
             if (std::string(argv[2]).compare("org") == 0)
             {
-              if (this->SetPnPToolOrder(TOOL_CMD_ORD_MOTOR_ORG, idx) == ERROR_SUCCESS)
+              if (this->SendOrder(TX_TYPE::TX_CTRL_TOOL_PnP, TOOL_CMD_ORD_MOTOR_ORG, idx) == ERROR_SUCCESS)
               {
                 std::cout << "xyio TOOL_CMD_ORD_MOTOR_ORG  success " << std::endl;
                 ret = true;
@@ -1236,7 +1395,7 @@ namespace toolsys
             }
             else if (std::string(argv[2]).compare("motor_on") == 0)
             {
-              if (this->SetPnPToolOrder(TOOL_CMD_ORD_MOTOR_ENABLE, idx) == ERROR_SUCCESS)
+              if (this->SendOrder(TX_TYPE::TX_CTRL_TOOL_PnP, TOOL_CMD_ORD_MOTOR_ENABLE, idx) == ERROR_SUCCESS)
               {
                 std::cout << "xyio TOOL_CMD_ORD_MOTOR_ENABLE  success " << std::endl;
                 ret = true;
@@ -1246,7 +1405,7 @@ namespace toolsys
             }
             else if (std::string(argv[2]).compare("motor_off") == 0)
             {
-              if (this->SetPnPToolOrder(TOOL_CMD_ORD_MOTOR_DISABLE, idx) == ERROR_SUCCESS)
+              if (this->SendOrder(TX_TYPE::TX_CTRL_TOOL_PnP, TOOL_CMD_ORD_MOTOR_DISABLE, idx) == ERROR_SUCCESS)
               {
                 std::cout << "xyio TOOL_CMD_ORD_MOTOR_DISABLE  success " << std::endl;
                 ret = true;
@@ -1261,7 +1420,7 @@ namespace toolsys
             if (std::string(argv[2]).compare("run") == 0)
             {
               int cnt = get_data(argv[4]);
-              if (this->SetPnPToolOrder(TOOL_CMD_ORD_MOTOR_RUN, idx, cnt) == ERROR_SUCCESS)
+              if (this->SendOrder(TX_TYPE::TX_CTRL_TOOL_PnP, TOOL_CMD_ORD_MOTOR_RUN, idx, cnt) == ERROR_SUCCESS)
               {
                 std::cout << "xyio TOOL_CMD_ORD_MOTOR_RUN  success " << std::endl;
                 ret = true;

@@ -32,6 +32,11 @@
 #define GetButtonObjId(obj)                     AP_DEF_OBJ_BASE_BUTTON|obj
 #define GetLedLampObjId(obj)                    AP_DEF_OBJ_BASE_LED|obj
 
+// #define MOTOR_ID_A                              0b0001
+// #define MOTOR_ID_B                              0b0010
+// #define MOTOR_ID_C                              0b0100
+// #define MOTOR_ID_ALL                            0b1000
+
 #endif
 
 namespace AP_OBJ

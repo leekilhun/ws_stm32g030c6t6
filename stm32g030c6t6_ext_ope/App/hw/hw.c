@@ -23,6 +23,9 @@ bool hwInit(void)
 
 #ifdef _USE_HW_TIM
   ret &= timInit();
+
+  timStart(_TIM_3);
+  LOG_PRINT("start tim3");
 #endif
 
 #ifdef _USE_HW_ADC

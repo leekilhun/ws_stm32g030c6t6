@@ -20,5 +20,7 @@
 //#define          _PCA8575PW_EX_IO_CH_IN     0
 //#define          _PCA8575PW_EX_IO_CH_OUT    1
 
+#define _USE_EXHW_HC165
+#define     _EXHW_HC165_MAX_CH     1
 
 #endif /* EXHW_EXHW_DEF_H_ */

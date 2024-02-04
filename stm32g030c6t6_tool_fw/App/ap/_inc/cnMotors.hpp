@@ -3,6 +3,8 @@
  *
  *  Created on: 2023. 6. 10.
  *      Author: gns2l
+ * 
+ *  edit : 24.01.31  : id  data -> idx
  */
 
 #pragma once
@@ -11,229 +13,241 @@
 
 #include "ap_def.hpp"
 
-namespace MOTOR
+// constexpr uint8_t def_motor_id_1   = 1;
+// constexpr uint8_t def_motor_id_2   = 2;
+// constexpr uint8_t def_motor_id_3   = 4;
+// constexpr uint8_t def_motor_id_all = 8;
+
+// #define MoTID_To_idx(id) (id == def_motor_id_1 ? AP_OBJ::MOTOR_A : (id == def_motor_id_2 ? AP_OBJ::MOTOR_B : (id == def_motor_id_3 ? AP_OBJ::MOTOR_C : (id == def_motor_id_all ? AP_OBJ::MOTOR_MAX : -1))))
+
+class cnMotors
 {
-  constexpr uint8_t def_motor_id_1 = 1;
-  constexpr uint8_t def_motor_id_2 = 2;
-  constexpr uint8_t def_motor_id_3 = 4;
-  constexpr uint8_t def_motor_id_all = 8;
-
-#define MoTID_To_idx(id) (id==def_motor_id_1?AP_OBJ::MOTOR_A:\
-(id==def_motor_id_2?AP_OBJ::MOTOR_B:(id==def_motor_id_3?AP_OBJ::MOTOR_C:\
-(id==def_motor_id_all?AP_OBJ::MOTOR_MAX:-1))))
-
-  class cnMotors
+  /****************************************************
+   *  data
+   ****************************************************/
+public:
+  struct cfg_t
   {
-    /****************************************************
-     *  data
-     ****************************************************/
-  public:
-    struct cfg_t
+    // axis_dat* p_apAxisDat;
+    ap_reg      *ptr_apReg{};
+    enStepMotor *ptr_motor{};
+    ap_io       *ptr_io{};
+
+    cfg_t()  = default;
+    ~cfg_t() = default;
+
+    // copy constructor
+    cfg_t(const cfg_t &rhs) = default;
+    // copy assignment operator
+    cfg_t &operator=(const cfg_t &rhs) = default;
+    // move constructor
+    cfg_t(cfg_t &&rhs) = default;
+    // move assignment operator
+    cfg_t &operator=(cfg_t &&rhs) = default;
+
+  } m_cfg{};
+
+public:
+  prc_step_t                          m_step{};
+  /****************************************************
+   *  Constructor
+   ****************************************************/
+public:
+  cnMotors() = default;
+
+  ~cnMotors() = default;
+  /****************************************************
+   *  func
+   ****************************************************/
+public:
+  inline int Init(cnMotors::cfg_t &cfg)
+  {
+    m_cfg = cfg;
+    LOG_PRINT("Init Success!");
+    return ERROR_SUCCESS;
+  }
+
+  /**
+   * @brief
+   *
+   * @param id_data
+   * B0000'0001  motor 1   MOTOR_A
+   * B0000'0010  motor 2   MOTOR_B
+   * B0000'0100  motor 3   MOTOR_C
+   * B0000'1000  motor all MOTOR_MAX
+   *
+   * @param is_on
+   * @return errno_t
+   */
+  inline errno_t MotorOnOff(AP_OBJ::MOTOR idx, bool is_on = true)
+  {
+
+    if (idx == AP_OBJ::MOTOR_MAX)
     {
-      // axis_dat* p_apAxisDat;
-      ap_reg *ptr_apReg{};
-      enStepMotor *ptr_motor{};
-      ap_io *ptr_io{};
+      is_on ? m_cfg.ptr_motor[AP_OBJ::MOTOR_A].Enable() : m_cfg.ptr_motor[AP_OBJ::MOTOR_A].Disable();
+      is_on ? m_cfg.ptr_motor[AP_OBJ::MOTOR_B].Enable() : m_cfg.ptr_motor[AP_OBJ::MOTOR_B].Disable();
+      is_on ? m_cfg.ptr_motor[AP_OBJ::MOTOR_C].Enable() : m_cfg.ptr_motor[AP_OBJ::MOTOR_C].Disable();
+      // LOG_PRINT("motor idx [%d]", motor_idx);
+    }
+    else if (idx < AP_OBJ::MOTOR_MAX)
+    {
+      is_on ? m_cfg.ptr_motor[idx].Enable() : m_cfg.ptr_motor[idx].Disable();
+    }
+    else
+      return ERROR_FAIL;
 
-      cfg_t() = default;
-      ~cfg_t() = default;
+    return ERROR_SUCCESS;
+  }
 
-      // copy constructor
-      cfg_t(const cfg_t &rhs) = default;
-      // copy assignment operator
-      cfg_t &operator=(const cfg_t &rhs) = default;
-      // move constructor
-      cfg_t(cfg_t &&rhs) = default;
-      // move assignment operator
-      cfg_t &operator=(cfg_t &&rhs) = default;
+  inline errno_t Move(AP_OBJ::MOTOR idx, int cmd_cnt)
+  {
 
-    } m_cfg{};
+    if (idx == AP_OBJ::MOTOR_MAX)
+    {
+      m_cfg.ptr_motor[AP_OBJ::MOTOR_A].Run(cmd_cnt, 10);
+      m_cfg.ptr_motor[AP_OBJ::MOTOR_B].Run(cmd_cnt, 10);
+      m_cfg.ptr_motor[AP_OBJ::MOTOR_C].Run(cmd_cnt, 10);
+    }
+    else if (idx < AP_OBJ::MOTOR_MAX)
+    {
+      return m_cfg.ptr_motor[idx].Run(cmd_cnt, 10);
+    }
+    else
+      return ERROR_FAIL;
 
-  public:
-    prc_step_t m_step{};
-    std::array<bool, AP_OBJ::MOTOR_MAX> m_IsOriginCplt{};
-    /****************************************************
-     *  Constructor
-     ****************************************************/
-  public:
-    cnMotors()
+    return ERROR_SUCCESS;
+  }
+
+  inline errno_t DoOrigin(AP_OBJ::MOTOR idx)
+  {
+
+    if (idx == AP_OBJ::MOTOR_MAX)
+    {
+      m_cfg.ptr_motor[AP_OBJ::MOTOR_A].SetZeroPosition();
+      m_cfg.ptr_motor[AP_OBJ::MOTOR_B].SetZeroPosition();
+      m_cfg.ptr_motor[AP_OBJ::MOTOR_C].SetZeroPosition();
+    }
+    else if (idx < AP_OBJ::MOTOR_MAX)
+    {
+      return m_cfg.ptr_motor[idx].SetZeroPosition();
+    }
+    else
+      return ERROR_FAIL;
+
+    return ERROR_SUCCESS;
+  }
+
+inline bool IsOriginCplt(AP_OBJ::MOTOR idx = AP_OBJ::MOTOR_MAX)
+  {
+    if (idx == AP_OBJ::MOTOR_MAX)
+    {
+      bool ret  = true;
+      ret       = m_cfg.ptr_motor[AP_OBJ::MOTOR_A].IsOriginCplt();
+      ret      &= m_cfg.ptr_motor[AP_OBJ::MOTOR_B].IsOriginCplt();
+      ret      &= m_cfg.ptr_motor[AP_OBJ::MOTOR_C].IsOriginCplt();
+      return ret;
+    }
+    return m_cfg.ptr_motor[idx].IsOriginCplt();
+  }
+
+  inline bool IsMotorOn(AP_OBJ::MOTOR idx = AP_OBJ::MOTOR_MAX)
+  {
+    if (idx == AP_OBJ::MOTOR_MAX)
+    {
+      bool ret  = true;
+      ret       = m_cfg.ptr_motor[AP_OBJ::MOTOR_A].m_status.motor_enabled;
+      ret      &= m_cfg.ptr_motor[AP_OBJ::MOTOR_B].m_status.motor_enabled;
+      ret      &= m_cfg.ptr_motor[AP_OBJ::MOTOR_C].m_status.motor_enabled;
+      return ret;
+    }
+    return m_cfg.ptr_motor[idx].m_status.motor_enabled;
+  }
+
+  // step machine을 통해 nonblock으로 처리된다.
+  inline void ThreadJob()
+  {
+    doRunStep();
+  }
+
+  inline void doRunStep()
+  {
+    enum
+    {
+      STEP_INIT,
+      STEP_TODO,
+      STEP_TIMEOUT,
+      STEP_RESET_COMM_ALARM,
+      STEP_STATE_UPDATE,
+      STEP_STATE_UPDATE_START,
+      STEP_STATE_UPDATE_WAIT,
+      STEP_STATE_UPDATE_END,
+      STEP_STATE_ALARM_RESET,
+      STEP_STATE_ALARM_RESET_START,
+      STEP_STATE_ALARM_RESET_WAIT,
+      STEP_STATE_ALARM_RESET_END,
+    };
+    // constexpr uint8_t step_retry_max = 3;
+    // constexpr uint8_t comm_timeout_max = 200;
+
+    switch (m_step.GetStep())
+    {
+    case STEP_INIT:
+    {
+      m_step.SetStep(STEP_TODO);
+    }
+    break;
+
+    /*######################################################
+     to do
+    ######################################################*/
+    case STEP_TODO:
     {
     }
-
-    ~cnMotors() {}
-    /****************************************************
-     *  func
-     ****************************************************/
-  public:
-    inline int Init(cnMotors::cfg_t &cfg)
-    {
-      m_cfg = cfg;
-      LOG_PRINT("Init Success!");
-      return ERROR_SUCCESS;
-    }
-
-    /**
-     * @brief
-     *
-     * @param id_data
-     * B0000'0001  motor 1   MOTOR_A
-     * B0000'0010  motor 2   MOTOR_B
-     * B0000'0100  motor 3   MOTOR_C
-     * B0000'1000  motor all MOTOR_MAX
-     *
-     * @param is_on
-     * @return errno_t
-     */
-    inline errno_t MotorOnOff(uint8_t id_data, bool is_on = true)
-    {
-      volatile int8_t motor_idx = MoTID_To_idx(id_data);
-      
-      if (motor_idx == AP_OBJ::MOTOR_MAX)
-      {
-        is_on ? m_cfg.ptr_motor[AP_OBJ::MOTOR_A].Enable() : m_cfg.ptr_motor[AP_OBJ::MOTOR_A].Disable();
-        is_on ? m_cfg.ptr_motor[AP_OBJ::MOTOR_B].Enable() : m_cfg.ptr_motor[AP_OBJ::MOTOR_B].Disable();    
-        is_on ? m_cfg.ptr_motor[AP_OBJ::MOTOR_C].Enable() : m_cfg.ptr_motor[AP_OBJ::MOTOR_C].Disable();
-        //LOG_PRINT("motor idx [%d]", motor_idx);
-      }
-      else if (motor_idx < AP_OBJ::MOTOR_MAX)
-      {
-        is_on ? m_cfg.ptr_motor[motor_idx].Enable() : m_cfg.ptr_motor[motor_idx].Disable();
-      }
-      else     
-        return ERROR_FAIL;
-
-      return ERROR_SUCCESS;
-    }
-
-    inline errno_t Move(uint8_t id_data, int cmd_cnt)
-    {
-     int8_t motor_idx = MoTID_To_idx(id_data);
-
-     if (motor_idx == AP_OBJ::MOTOR_MAX)
-      {
-        m_cfg.ptr_motor[AP_OBJ::MOTOR_A].Run(cmd_cnt, 10);
-        m_cfg.ptr_motor[AP_OBJ::MOTOR_B].Run(cmd_cnt, 10);
-        m_cfg.ptr_motor[AP_OBJ::MOTOR_C].Run(cmd_cnt, 10);
-      }
-      else if (motor_idx < AP_OBJ::MOTOR_MAX)
-      {         
-       return m_cfg.ptr_motor[motor_idx].Run(cmd_cnt, 10);
-      }
-      else     
-        return ERROR_FAIL;
-
-      return ERROR_SUCCESS;
-    }
-
-    inline errno_t DoOrigin(uint8_t id_data)
-    {
-      int8_t motor_idx = MoTID_To_idx(id_data);
-
-      if (motor_idx == AP_OBJ::MOTOR_MAX)
-      {
-        m_cfg.ptr_motor[AP_OBJ::MOTOR_A].SetZeroPosition();
-        m_cfg.ptr_motor[AP_OBJ::MOTOR_B].SetZeroPosition();
-        m_cfg.ptr_motor[AP_OBJ::MOTOR_C].SetZeroPosition();
-      }
-      else if (motor_idx < AP_OBJ::MOTOR_MAX)
-      {
-        return m_cfg.ptr_motor[motor_idx].SetZeroPosition();
-      }
-      else
-        return ERROR_FAIL;
-
-      return ERROR_SUCCESS;
-    }
-
-    inline void GetMotorState(AP_OBJ::MOTOR id = AP_OBJ::MOTOR_MAX)
+    break;
+    /*######################################################
+      timeout
+    ######################################################*/
+    case STEP_TIMEOUT:
     {
     }
-
-    // step machine을 통해 nonblock으로 처리된다.
-    inline void ThreadJob()
+    break;
+    /*######################################################
+      STEP_STATE_UPDATE
+    ######################################################*/
+    case STEP_STATE_UPDATE:
     {
-      doRunStep();
+      m_step.wait_resp = false;
+      m_step.wait_step = 0;
+      m_step.retry_cnt = 0;
+      m_step.SetStep(STEP_STATE_UPDATE_START);
     }
+    break;
 
-    inline void doRunStep()
+    case STEP_STATE_UPDATE_START:
     {
-      enum
-      {
-        STEP_INIT,
-        STEP_TODO,
-        STEP_TIMEOUT,
-        STEP_RESET_COMM_ALARM,
-        STEP_STATE_UPDATE,
-        STEP_STATE_UPDATE_START,
-        STEP_STATE_UPDATE_WAIT,
-        STEP_STATE_UPDATE_END,
-        STEP_STATE_ALARM_RESET,
-        STEP_STATE_ALARM_RESET_START,
-        STEP_STATE_ALARM_RESET_WAIT,
-        STEP_STATE_ALARM_RESET_END,
-      };
-      //constexpr uint8_t step_retry_max = 3;
-      //constexpr uint8_t comm_timeout_max = 200;
+    }
+    break;
 
-      switch (m_step.GetStep())
-      {
-      case STEP_INIT:
-      {
-        m_step.SetStep(STEP_TODO);
-      }
-      break;
-
-      /*######################################################
-       to do
-      ######################################################*/
-      case STEP_TODO:
-      {
-      }
-      break;
-      /*######################################################
-        timeout
-      ######################################################*/
-      case STEP_TIMEOUT:
-      {
-      }
-      break;
-      /*######################################################
-        STEP_STATE_UPDATE
-      ######################################################*/
-      case STEP_STATE_UPDATE:
-      {
-        m_step.wait_resp = false;
-        m_step.wait_step = 0;
-        m_step.retry_cnt = 0;
-        m_step.SetStep(STEP_STATE_UPDATE_START);
-      }
-      break;
-
-      case STEP_STATE_UPDATE_START:
-      {
-      }
-      break;
-
-      case STEP_STATE_UPDATE_WAIT:
-      {
-        if (m_step.LessThan(50))
-          break;
-      }
-      break;
-
-      case STEP_STATE_UPDATE_END:
-      {
-
-        m_step.SetStep(STEP_TODO);
+    case STEP_STATE_UPDATE_WAIT:
+    {
+      if (m_step.LessThan(50))
         break;
-      }
-      break;
-
-      default:
-        break;
-      }
-      // end of switch
     }
+    break;
+
+    case STEP_STATE_UPDATE_END:
+    {
+
+      m_step.SetStep(STEP_TODO);
+      break;
+    }
+    break;
+
+    default:
+      break;
+    }
+    // end of switch
+  }
 
 #if 0
 
@@ -722,7 +736,5 @@ namespace MOTOR
     }
 
 #endif
-  };
-} // end of namespace MOTOR
-
+};
 #endif /* AP__INC_CNMOTORS_HPP_ */

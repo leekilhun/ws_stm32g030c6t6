@@ -36,6 +36,13 @@ struct enBtn
 
     ~cfg_t() = default;
 
+    char *set_name(const char *name)
+    {
+      memset(&name_str[0], 0, sizeof(name_str));
+      strlcpy(&name_str[0], name, sizeof(name_str));
+      return &name_str[0];
+    }
+
   } m_cfg{};
 
   enum class event_e : uint8_t

@@ -3,6 +3,8 @@
  *
  *  Created on: Jul 10, 2023
  *      Author: gns2.lee
+ * 
+ * edit : 2024.02.03 timer interrupt capture 추가
  */
 
 
@@ -18,8 +20,9 @@
 
 
 extern TIM_HandleTypeDef htim3;
-extern TIM_HandleTypeDef htim14;
-extern TIM_HandleTypeDef htim16;
+
+//extern TIM_HandleTypeDef htim14;
+//extern TIM_HandleTypeDef htim16;
 
 
 tim_tbl_t  tim_tbl[TIM_MAX_CH];
@@ -37,6 +40,7 @@ bool timInit(void)
     tim_tbl[i].pHandle = NULL;
     tim_tbl[i].func_callback = NULL;
     tim_tbl[i].func_cb = NULL;
+    tim_tbl[i].func_capture_cb = NULL;
     tim_tbl[i].obj = NULL;
     tim_tbl[i].act_ch_bit = 0x00;
     tim_tbl[i].is_start = false;
@@ -69,12 +73,13 @@ tim_tbl_t * timGetData(uint8_t ch)
 
 bool timStart(uint8_t ch)
 {
-  TIM_MasterConfigTypeDef sMasterConfig = {0};
+  //TIM_MasterConfigTypeDef sMasterConfig = {0};
   switch (ch)
   {
     case _DEF_TIM1:
       tim_tbl[ch].pHandle  = &htim3;
 
+#if 0
       /* timer clock interval 1us, initial event time 1ms  */
       tim_tbl[ch].pHandle->Instance                = TIM3;
       tim_tbl[ch].pHandle->Init.Prescaler          = (uint32_t)(SystemCoreClock/1000000)-1;
@@ -93,43 +98,43 @@ bool timStart(uint8_t ch)
       {
         return false;
       }
-
+#endif
       tim_tbl[ch].is_start = true;
       break;
 
-    case _DEF_TIM2:
-      tim_tbl[ch].pHandle  = &htim14;
+    // case _DEF_TIM2:
+    //   tim_tbl[ch].pHandle  = &htim14;
 
-      /* timer clock interval 1us, initial event time 1ms  */
-      tim_tbl[ch].pHandle->Instance                = TIM14;
-      tim_tbl[ch].pHandle->Init.Prescaler          = (uint32_t)(SystemCoreClock/1000000)-1;
-      tim_tbl[ch].pHandle->Init.CounterMode        = TIM_COUNTERMODE_UP;
-      tim_tbl[ch].pHandle->Init.Period             = (1000-1);
-      tim_tbl[ch].pHandle->Init.ClockDivision      = TIM_CLOCKDIVISION_DIV1;
-      tim_tbl[ch].pHandle->Init.AutoReloadPreload  = TIM_AUTORELOAD_PRELOAD_ENABLE;
-      if (HAL_TIM_Base_Init(tim_tbl[ch].pHandle) != HAL_OK)
-      {
-        return false;
-      }
-      tim_tbl[ch].is_start = true;
-      break;
+    //   /* timer clock interval 1us, initial event time 1ms  */
+    //   tim_tbl[ch].pHandle->Instance                = TIM14;
+    //   tim_tbl[ch].pHandle->Init.Prescaler          = (uint32_t)(SystemCoreClock/1000000)-1;
+    //   tim_tbl[ch].pHandle->Init.CounterMode        = TIM_COUNTERMODE_UP;
+    //   tim_tbl[ch].pHandle->Init.Period             = (1000-1);
+    //   tim_tbl[ch].pHandle->Init.ClockDivision      = TIM_CLOCKDIVISION_DIV1;
+    //   tim_tbl[ch].pHandle->Init.AutoReloadPreload  = TIM_AUTORELOAD_PRELOAD_ENABLE;
+    //   if (HAL_TIM_Base_Init(tim_tbl[ch].pHandle) != HAL_OK)
+    //   {
+    //     return false;
+    //   }
+    //   tim_tbl[ch].is_start = true;
+    //   break;
 
-    case _DEF_TIM3:
-      tim_tbl[ch].pHandle  = &htim16;
+    // case _DEF_TIM3:
+    //   tim_tbl[ch].pHandle  = &htim16;
 
-      /* timer clock interval 1us, initial event time 1ms  */
-      tim_tbl[ch].pHandle->Instance                = TIM16;
-      tim_tbl[ch].pHandle->Init.Prescaler          = (uint32_t)(SystemCoreClock/1000000)-1;
-      tim_tbl[ch].pHandle->Init.CounterMode        = TIM_COUNTERMODE_UP;
-      tim_tbl[ch].pHandle->Init.Period             = (1000-1);
-      tim_tbl[ch].pHandle->Init.ClockDivision      = TIM_CLOCKDIVISION_DIV1;
-      tim_tbl[ch].pHandle->Init.AutoReloadPreload  = TIM_AUTORELOAD_PRELOAD_ENABLE;
-      if (HAL_TIM_Base_Init(tim_tbl[ch].pHandle) != HAL_OK)
-      {
-        return false;
-      }
-      tim_tbl[ch].is_start = true;
-      break;
+    //   /* timer clock interval 1us, initial event time 1ms  */
+    //   tim_tbl[ch].pHandle->Instance                = TIM16;
+    //   tim_tbl[ch].pHandle->Init.Prescaler          = (uint32_t)(SystemCoreClock/1000000)-1;
+    //   tim_tbl[ch].pHandle->Init.CounterMode        = TIM_COUNTERMODE_UP;
+    //   tim_tbl[ch].pHandle->Init.Period             = (1000-1);
+    //   tim_tbl[ch].pHandle->Init.ClockDivision      = TIM_CLOCKDIVISION_DIV1;
+    //   tim_tbl[ch].pHandle->Init.AutoReloadPreload  = TIM_AUTORELOAD_PRELOAD_ENABLE;
+    //   if (HAL_TIM_Base_Init(tim_tbl[ch].pHandle) != HAL_OK)
+    //   {
+    //     return false;
+    //   }
+    //   tim_tbl[ch].is_start = true;
+    //   break;
 
     default:
       break;
@@ -150,6 +155,11 @@ void timAttachCB (uint8_t ch, void* obj, void (*func_cb)(void*, void*, void*))
 {
   tim_tbl[ch].obj = obj;
   tim_tbl[ch].func_cb = func_cb;
+}
+
+void timAttachCaptureCB(uint8_t ch, void (*func_capture_cb)(void *, void *, void *))
+{
+  tim_tbl[ch].func_capture_cb = func_capture_cb;
 }
 
 void timEnableISR(uint8_t ch)
@@ -240,29 +250,41 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
       (*tim_tbl[_DEF_TIM1].func_cb)(tim_tbl[_DEF_TIM1].obj, NULL, NULL);
     }
   }
-  else if(htim->Instance==TIM14)
-  {
-    if (tim_tbl[_DEF_TIM2].func_callback != NULL )
-    {
-      (*tim_tbl[_DEF_TIM2].func_callback)();
-    }
-    if (tim_tbl[_DEF_TIM2].func_cb != NULL )
-    {
-      (*tim_tbl[_DEF_TIM2].func_cb)(tim_tbl[_DEF_TIM2].obj, NULL, NULL);
-    }
-  }
-  else if(htim->Instance==TIM16)
-  {
-    if (tim_tbl[_DEF_TIM3].func_callback != NULL )
-    {
-      (*tim_tbl[_DEF_TIM3].func_callback)();
-    }
-    if (tim_tbl[_DEF_TIM3].func_cb != NULL )
-    {
-      (*tim_tbl[_DEF_TIM3].func_cb)(tim_tbl[_DEF_TIM3].obj, NULL, NULL);
-    }
-  }
+  // else if(htim->Instance==TIM14)
+  // {
+  //   if (tim_tbl[_DEF_TIM2].func_callback != NULL )
+  //   {
+  //     (*tim_tbl[_DEF_TIM2].func_callback)();
+  //   }
+  //   if (tim_tbl[_DEF_TIM2].func_cb != NULL )
+  //   {
+  //     (*tim_tbl[_DEF_TIM2].func_cb)(tim_tbl[_DEF_TIM2].obj, NULL, NULL);
+  //   }
+  // }
+  // else if(htim->Instance==TIM16)
+  // {
+  //   if (tim_tbl[_DEF_TIM3].func_callback != NULL )
+  //   {
+  //     (*tim_tbl[_DEF_TIM3].func_callback)();
+  //   }
+  //   if (tim_tbl[_DEF_TIM3].func_cb != NULL )
+  //   {
+  //     (*tim_tbl[_DEF_TIM3].func_cb)(tim_tbl[_DEF_TIM3].obj, NULL, NULL);
+  //   }
+  // }
 
+}
+
+/* 입력 캡처 인터럽트 핸들러 함수 */
+void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
+{
+  if(htim->Instance==TIM3)
+  {
+    if (tim_tbl[_DEF_TIM1].func_capture_cb != NULL )
+    {
+      (*tim_tbl[_DEF_TIM1].func_capture_cb)(tim_tbl[_DEF_TIM1].obj, NULL, NULL);
+    }
+  }
 }
 
 

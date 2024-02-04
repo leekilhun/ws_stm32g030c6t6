@@ -28,5 +28,9 @@ bool exhwInit(void)
   ret &= iicomm_devInit();
 #endif
 
+#ifdef _USE_EXHW_HC165
+  ret &= hc165_Init();
+#endif
+
   return ret;
 }

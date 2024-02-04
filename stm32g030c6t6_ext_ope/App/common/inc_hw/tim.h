@@ -30,6 +30,7 @@ extern "C" {
     uint32_t                channel[4];
     void (*func_callback)(void);
     void (*func_cb)(void*, void*, void*);
+    void (*func_capture_cb)(void*, void*, void*);
     void* obj;
     bool                    is_start;
   } tim_tbl_t;
@@ -43,6 +44,7 @@ extern "C" {
 
   void timAttachCallBackFunc(uint8_t ch, void (*func)());
   void timAttachCB (uint8_t ch, void* obj , void (*func_cb)(void*, void*, void*));
+  void timAttachCaptureCB(uint8_t ch, void (*func_capture_cb)(void *, void *, void *));
   void timEnableISR(uint8_t ch);
   void timDisableISR(uint8_t ch);
   void timResetCnt(uint8_t ch);

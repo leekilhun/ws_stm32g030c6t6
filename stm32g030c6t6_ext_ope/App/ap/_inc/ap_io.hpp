@@ -4,6 +4,8 @@
  *  Created on: 2023. 11. 27.
  *      Author: gns2l
  *
+ *  edit :2024.02.03 ext_op io
+ *
  *
  */
 
@@ -13,33 +15,242 @@
 
 #include "ap_def.hpp"
 
-#ifdef _USE_HW_RTOS
-#define AP_IO_LOCK_BEGIN osMutexWait(ap_io_mutex_id, osWaitForever)
-#define AP_IO_LOCK_END osMutexRelease(ap_io_mutex_id)
-#else
-#define AP_IO_LOCK_BEGIN
-#define AP_IO_LOCK_END
-#endif
 
+struct ap_io
+{
+  using data_t = uint8_t;
+  static constexpr uint8_t def_io_port_of_bank = 8;
+  static constexpr uint32_t def_in_start_addr  = AP_DEF_START_IN_ADDR;
+  static constexpr uint32_t def_out_start_addr = AP_DEF_START_OUT_ADDR;
+
+  enum io_bank
+  {
+    _bank_main_0808,
+    _bank_max,
+  };
+  enum in_e // in_name
+  {
+    in_0x00 = def_in_start_addr,
+    in_0x01,
+    in_0x02,
+    in_0x03,
+    in_0x04,
+    in_0x05,
+    in_0x06,
+    in_0x07,
+  };
+  enum out_e // out_name
+  {
+    out_0x00 = def_out_start_addr,
+    out_0x01,
+    out_0x02,
+    out_0x03,
+    out_0x04,
+    out_0x05,
+    out_0x06,
+    out_0x07,
+  };
+
+  struct cfg_t
+  {
+    uint8_t ext_in_hc165_ch{};
+
+    cfg_t()  = default;
+    ~cfg_t() = default;
+    // copy constructor
+    cfg_t(const cfg_t &other) = default;
+    // copy assignment
+    cfg_t &operator=(const cfg_t &other) = default;
+    // move constructor
+    cfg_t(cfg_t &&other) = default;
+    // move assignment
+    cfg_t &operator=(cfg_t &&other) = default;
+  } m_cfg{};
+
+public:
+  std::array<data_t, _bank_max> m_in{};
+  std::array<data_t, _bank_max> m_out{};
+
+public:
+  ap_io()  = default;
+  ~ap_io() = default;
+
+public:
+  inline errno_t Init(cfg_t cfg)
+  {
+    m_cfg = cfg;
+    LOG_PRINT("[OK] Init Success io cnt [%dx%d]!", def_io_port_of_bank, _bank_max);
+    return ERROR_SUCCESS;
+  }
+
+  inline errno_t SetOutputReg(uint8_t reg, uint8_t bank = 0)
+  {
+    if (bank >= _bank_max)
+      return -1;
+
+    uint8_t x_reg = reg ^ m_out[bank];
+    // LOG_PRINT("reg[0x%04X], x_reg[0x%04X], bank[%d]",reg, x_reg, bank);
+    for (uint8_t i = 0; i < def_io_port_of_bank; i++)
+    {
+      if ((x_reg >> (i)) & 1)
+      {
+        switch (bank)
+        {
+        case _bank_main_0808:
+          SetGpioOut((i), ((reg >> (i)) & 1));
+          break;
+
+        default:
+          return -1;
+        }
+      }
+    }
+
+    return ERROR_SUCCESS;
+  }
+
+  inline errno_t SetGpioOut(uint16_t out_bit, bool onoff = true)
+  {
+    GPIO_PinState state = onoff ? GPIO_OUT_STATE_ON : GPIO_OUT_STATE_OFF;
+    switch ((out_e)(out_bit + def_out_start_addr))
+    {
+    case out_0x00:
+      HAL_GPIO_WritePin(IO_OUT_0_GPIO_Port, IO_OUT_0_Pin, state);
+      break;
+    case out_0x01:
+      HAL_GPIO_WritePin(IO_OUT_1_GPIO_Port, IO_OUT_1_Pin, state);
+      break;
+    case out_0x02:
+      HAL_GPIO_WritePin(IO_OUT_2_GPIO_Port, IO_OUT_2_Pin, state);
+      break;
+    case out_0x03:
+      HAL_GPIO_WritePin(IO_OUT_3_GPIO_Port, IO_OUT_3_Pin, state);
+      break;
+    case out_0x04:
+      HAL_GPIO_WritePin(IO_OUT_4_GPIO_Port, IO_OUT_4_Pin, state);
+      break;
+    case out_0x05:
+      HAL_GPIO_WritePin(IO_OUT_5_GPIO_Port, IO_OUT_5_Pin, state);
+      break;
+    case out_0x06:
+      HAL_GPIO_WritePin(IO_OUT_6_GPIO_Port, IO_OUT_6_Pin, state);
+      break;
+    case out_0x07:
+      HAL_GPIO_WritePin(IO_OUT_7_GPIO_Port, IO_OUT_7_Pin, state);
+      break;
+    default: return -1; break;
+    }
+    // end of switch
+    return ERROR_SUCCESS;
+  }
+
+  inline void Update_io(void)
+  {
+    {
+      data_t gpio{};
+      // Out
+      enum Bank
+      {
+        _b1,
+        _b_max
+      };
+      std::array<data_t, _b_max> datas{};
+      gpio       |= (uint8_t)HAL_GPIO_ReadPin(IO_OUT_0_GPIO_Port, IO_OUT_0_Pin) << 0;
+      gpio       |= (uint8_t)HAL_GPIO_ReadPin(IO_OUT_1_GPIO_Port, IO_OUT_1_Pin) << 1;
+      gpio       |= (uint8_t)HAL_GPIO_ReadPin(IO_OUT_2_GPIO_Port, IO_OUT_2_Pin) << 2;
+      gpio       |= (uint8_t)HAL_GPIO_ReadPin(IO_OUT_3_GPIO_Port, IO_OUT_3_Pin) << 3;
+      gpio       |= (uint8_t)HAL_GPIO_ReadPin(IO_OUT_4_GPIO_Port, IO_OUT_4_Pin) << 4;
+      gpio       |= (uint8_t)HAL_GPIO_ReadPin(IO_OUT_5_GPIO_Port, IO_OUT_5_Pin) << 5;
+      gpio       |= (uint8_t)HAL_GPIO_ReadPin(IO_OUT_6_GPIO_Port, IO_OUT_6_Pin) << 6;
+      gpio       |= (uint8_t)HAL_GPIO_ReadPin(IO_OUT_7_GPIO_Port, IO_OUT_7_Pin) << 7;
+      datas[_b1]  = gpio;
+
+      m_out[_b1] = datas[_b1];
+
+      // In
+      datas.fill(0);
+      gpio =  ~hc165_ReadInputs(m_cfg.ext_in_hc165_ch); //state 0 is on, 1 is off
+      datas[_b1]  = gpio;
+      m_in[_b1] = datas[_b1];
+    }
+  }
+
+  /* IO  control function */
+  inline bool IsOn(uint32_t addr)
+  {
+    Update_io();
+
+    enum Bank
+    {
+      _b1,
+      _b_max
+    };
+    // Input
+    if (addr < AP_DEF_START_OUT_ADDR) 
+    {
+      uint32_t data = (uint32_t)m_in[_b1];
+      return (data >> (addr - AP_DEF_START_IN_ADDR)) & 1;
+    }
+
+    // Output
+    uint32_t data = (uint32_t)(m_out[_b1]);
+    return (data >> (addr - AP_DEF_START_OUT_ADDR)) & 1;
+  }
+
+  inline bool IsOff(uint32_t addr)
+  {
+    return !IsOn(addr);
+  }
+
+  inline errno_t OutputOn(uint32_t addr)
+  {
+    if (addr < def_out_start_addr)
+      return -1;
+    return SetGpioOut((addr - def_out_start_addr));
+  }
+
+  inline errno_t OutputOff(uint32_t addr)
+  {
+    if (addr < def_out_start_addr)
+      return -1;
+    return SetGpioOut((addr - def_out_start_addr), false);
+  }
+
+  inline errno_t OutputToggle(uint32_t addr)
+  {
+    if (IsOn(addr))
+      return OutputOff(addr);
+    else
+      return OutputOn(addr);
+  }
+};
+// end of struct ap_io
+
+#if 0
 struct ap_io
 {
 
 #ifndef _USE_EXHW_IICOMM_DEV
+  
+  static constexpr uint8_t def_io_port_of_bank = 16;
+  static constexpr uint8_t def_err_cnt_max = 100;
+  static constexpr uint32_t def_in_start_addr = AP_DEF_START_IN_ADDR;
+  static constexpr uint32_t def_out_start_addr = AP_DEF_START_OUT_ADDR;
+  
+  
   /**
-   * @brief io controller consisting of 1616 points extern b'd the main b'd 1616 points
-   *  main   b'd 1616 points
-   *  extern b'd 1616 points (with i2c)
+   * @brief io controller 
+   *  main   b'd input 16, output 16
    */
   enum io_bank
   {
     bank_main_1616,
-    bank_ext_1616,
     bank_max,
   };
 
   enum in_e // in_name
   {
-    in_0x00 = AP_DEF_START_IN_ADDR,
+    in_0x00 = def_in_start_addr,
     in_0x01,
     in_0x02,
     in_0x03,
@@ -56,29 +267,10 @@ struct ap_io
     in_0x15,
     in_0x16,
     in_0x17,
-
-    in_0x20, // ext_io 1
-    in_0x21,
-    in_0x22,
-    in_0x23,
-    in_0x24,
-    in_0x25,
-    in_0x26,
-    in_0x27,
-
-    in_0x30,
-    in_0x31,
-    in_0x32,
-    in_0x33,
-    in_0x34,
-    in_0x35,
-    in_0x36,
-    in_0x37,
-
   };
   enum out_e // out_name
   {
-    out_0x00 = AP_DEF_START_OUT_ADDR,
+    out_0x00 = def_out_start_addr,
     out_0x01,
     out_0x02,
     out_0x03,
@@ -96,35 +288,14 @@ struct ap_io
     out_0x16,
     out_0x17,
 
-    out_0x20, // ext_io 1
-    out_0x21,
-    out_0x22,
-    out_0x23,
-    out_0x24,
-    out_0x25,
-    out_0x26,
-    out_0x27,
-
-    out_0x30,
-    out_0x31,
-    out_0x32,
-    out_0x33,
-    out_0x34,
-    out_0x35,
-    out_0x36,
-    out_0x37,
   };
-  static constexpr uint8_t def_io_port_of_bank = 16;
-  static constexpr uint8_t def_err_cnt_max = 100;
-  static constexpr uint32_t def_in_start_addr = AP_DEF_START_IN_ADDR;
-  static constexpr uint32_t def_out_start_addr = AP_DEF_START_OUT_ADDR;
 #ifdef _USE_HW_RTOS
   osMutexId ap_io_mutex_id;
 #endif
 
   struct cfg_t
   {
-    uint8_t ex_io_i2c_ch{};
+    uint8_t i2c_ch{};
     uint16_t io_dev_addr{};
     bool (*i2cBegin)(uint8_t, i2c_freq_t){};
     bool (*i2cRecovery)(uint8_t){};
@@ -732,5 +903,8 @@ public:
 
 #endif
 };
+
+
+#endif
 
 #endif /* AP__INC_AP_IO_HPP_ */

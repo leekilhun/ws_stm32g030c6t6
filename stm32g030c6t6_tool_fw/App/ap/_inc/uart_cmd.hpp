@@ -3,11 +3,14 @@
  *
  *  Created on: 2023. 7. 23.
  *      Author: gns2l
+ *  edit : 24.01.30
  */
 
 #pragma once
 #ifndef AP__INC_UART_CMD_HPP_
 #define AP__INC_UART_CMD_HPP_
+
+
 
 #include "ap_def.hpp"
 
@@ -44,53 +47,97 @@ p_cmd->packet.buffer[index++] = check_sum;
 namespace CMD
 {
 
+#ifdef CMD_PART_MAIN
+  // TX  (main -> secondary) request
+  enum class TX_TYPE : uint16_t
+  {
+    TX_OK_RESPONSE    = 0x0000,
+    TX_READ_TOOL_DATA = 0x0001,
+    TX_READ_TOOL_INFO = 0x0002,
+    //
+    TX_CTRL_IO_OUT = 0x0010,
+    TX_CTRL_CYL    = 0x0011,
+    TX_CTRL_VAC    = 0x0012,
+    TX_CTRL_REG_OPTION = 0x0013,
+    //
+    TX_CTRL_INITIALIZE = 0x001A,
+    TX_CTRL_VIRTUAL_SW = 0x001B,
+    //
+    TX_CTRL_MOT_ORIGIN      = 0x0020,
+    TX_CTRL_MOT_ONOFF       = 0x0021,
+    TX_CTRL_MOT_MOVE        = 0x0022,
+    TX_CTRL_MOT_STOP        = 0x0023,
+    TX_CTRL_MOT_JOG         = 0x0024,
+    TX_CTRL_MOT_LIMIT       = 0x0025,
+    TX_CTRL_MOT_ZEROSET     = 0x0026,
+    TX_CTRL_MOT_RELMOVE     = 0x0027,
+    TX_CTRL_MOT_CLEAR_ALARM = 0x0028,
+    TX_CTRL_MOT_CHANGE_VEL  = 0x0029,
+    TX_CTRL_MOT_MOVE_VEL    = 0x002A,
+    TX_CTRL_MOT_RELMOVE_VEL = 0x002B,
+    TX_CTRL_MOT_VEL_JOG     = 0x002C,
+    
+    TX_CTRL_TOOL_PnP    = 0x0040,
+    TX_MODE_FW_DOWNLOAD = 0xF000,
+  };
+
+  // RX (main -> secondary) request information or action
+  enum RX_TYPE : uint16_t
+  {
+    RX_OK_RESPONSE = 0x0000,
+    RX_TOOL_DATA   = 0x0001,
+    RX_TOOL_INFO   = 0x0002,
+
+  };
+#else
   // TX  (secondary -> main) provide information
   enum TX_TYPE : uint16_t
   {
     TX_OK_RESPONSE = 0x0000,
-    TX_TOOL_DATA = 0x0001,
-    TX_TOOL_INFO = 0x0002,
+    TX_TOOL_DATA   = 0x0001,
+    TX_TOOL_INFO   = 0x0002,
   };
 
   // RX (main -> secondary) request information or action
-  enum CMD_TYPE : uint16_t
+  enum RX_TYPE : uint16_t
   {
-    CMD_OK_RESPONSE = 0x0000,
-    CMD_READ_TOOL_DATA = 0x0001,
-    CMD_READ_TOOL_INFO = 0x0002,
+    RX_OK_RESPONSE    = 0x0000,
+    RX_READ_TOOL_DATA = 0x0001,
+    RX_READ_TOOL_INFO = 0x0002,
 
-    CMD_CTRL_IO_OUT = 0x0010,
-    CMD_CTRL_CYL = 0x0011,
-    CMD_CTRL_VAC = 0x0012,
-    CMD_CTRL_REG_OPTION = 0x0013,
+    RX_CTRL_IO_OUT     = 0x0010,
+    RX_CTRL_CYL        = 0x0011,
+    RX_CTRL_VAC        = 0x0012,
+    RX_CTRL_REG_OPTION = 0x0013,
 
-    CMD_CTRL_INITIALIZE = 0x001A,
-    CMD_CTRL_VIRTUAL_SW = 0x001B,
+    RX_CTRL_INITIALIZE = 0x001A,
+    RX_CTRL_VIRTUAL_SW = 0x001B,
 
-    CMD_CTRL_MOT_ORIGIN = 0x0020,
-    CMD_CTRL_MOT_ONOFF = 0x0021,
-    CMD_CTRL_MOT_MOVE = 0x0022,
-    CMD_CTRL_MOT_STOP = 0x0023,
-    CMD_CTRL_MOT_JOG = 0x0024,
-    CMD_CTRL_MOT_LIMIT = 0x0025,
-    CMD_CTRL_MOT_ZEROSET = 0x0026,
-    CMD_CTRL_MOT_RELMOVE = 0x0027,
-    CMD_CTRL_MOT_CLEAR_ALARM = 0x0028,
-    CMD_CTRL_MOT_CHANGE_VEL = 0x0029,
-    CMD_CTRL_MOT_MOVE_VEL = 0x002A,
-    CMD_CTRL_MOT_RELMOVE_VEL = 0x002B,
-    CMD_CTRL_MOT_VEL_JOG = 0x002C,
+    RX_CTRL_MOT_ORIGIN      = 0x0020,
+    RX_CTRL_MOT_ONOFF       = 0x0021,
+    RX_CTRL_MOT_MOVE        = 0x0022,
+    RX_CTRL_MOT_STOP        = 0x0023,
+    RX_CTRL_MOT_JOG         = 0x0024,
+    RX_CTRL_MOT_LIMIT       = 0x0025,
+    RX_CTRL_MOT_ZEROSET     = 0x0026,
+    RX_CTRL_MOT_RELMOVE     = 0x0027,
+    RX_CTRL_MOT_CLEAR_ALARM = 0x0028,
+    RX_CTRL_MOT_CHANGE_VEL  = 0x0029,
+    RX_CTRL_MOT_MOVE_VEL    = 0x002A,
+    RX_CTRL_MOT_RELMOVE_VEL = 0x002B,
+    RX_CTRL_MOT_VEL_JOG     = 0x002C,
 
-    CMD_CTRL_TOOL_PnP = 0x0040,
+    RX_CTRL_TOOL_PnP = 0x0040,
 
-    CMD_MODE_FW_DOWNLOAD = 0xF000,
+    RX_MODE_FW_DOWNLOAD = 0xF000,
 
   };
+#endif
 
   enum tool_PnP_order_e : int16_t
   {
-    TOOL_CMD_ERR_RET = -1,
-    TOOL_CMD_NONE = 0,
+    TOOL_CMD_ERR_RET          = -1,
+    TOOL_CMD_NONE             = 0,
     TOOL_CMD_ORD_MOTOR_ENABLE = 1,
     TOOL_CMD_ORD_MOTOR_DISABLE,
     TOOL_CMD_ORD_MOTOR_RUN,
@@ -100,7 +147,7 @@ namespace CMD
 
 #ifdef _USE_HW_RTOS
 #define AP_UART_CMD_LOCK_BEGIN osMutexWait(m_mutex_id, osWaitForever)
-#define AP_UART_CMD_LOCK_END osMutexRelease(m_mutex_id)
+#define AP_UART_CMD_LOCK_END   osMutexRelease(m_mutex_id)
 #else
 #define AP_UART_CMD_LOCK_BEGIN
 #define AP_UART_CMD_LOCK_END
@@ -112,16 +159,16 @@ namespace CMD
     static constexpr uint8_t CMD_STX0 = 0x4A;
     static constexpr uint8_t CMD_STX1 = 0x4C;
 
-    static constexpr int CMD_MAX_DATA_LENGTH = 120;
+    static constexpr int CMD_MAX_DATA_LENGTH   = 120;
     static constexpr int CMD_MAX_PACKET_LENGTH = (CMD_MAX_DATA_LENGTH + 8);
-    static constexpr int PACKET_BUFF_LENGTH = CMD_MAX_PACKET_LENGTH;
+    static constexpr int PACKET_BUFF_LENGTH    = CMD_MAX_PACKET_LENGTH;
 
     /****************************************************
      *  data
      ****************************************************/
     struct cfg_t
     {
-      uint8_t ch{};
+      uint8_t  ch{};
       uint32_t baud{};
 
       cfg_t() = default;
@@ -137,17 +184,17 @@ namespace CMD
 
     struct packet_st
     {
-      uint16_t type{};
-      uint16_t obj_id{};
-      uint16_t data_length{};
-      uint8_t *data{};
-      uint8_t checksum{};
-      uint8_t checksum_recv{};
+      uint16_t                                   type{};
+      uint16_t                                   obj_id{};
+      uint16_t                                   data_length{};
+      uint8_t                                   *data{};
+      uint8_t                                    checksum{};
+      uint8_t                                    checksum_recv{};
       std::array<uint8_t, CMD_MAX_PACKET_LENGTH> buffer{};
-      uint8_t buffer_idx{};
-      uint16_t data_cnt{};
-      uint32_t resp_ms{};
-      prc_step_t state{};
+      uint8_t                                    buffer_idx{};
+      uint16_t                                   data_cnt{};
+      uint32_t                                   resp_ms{};
+      prc_step_t                                 state{};
 
       packet_st() = default;
       // copy constructor
@@ -158,13 +205,13 @@ namespace CMD
       packet_st(packet_st &&other) = default;
       // move assignment
       packet_st &operator=(packet_st &&other) = default;
-      ~packet_st() = default;
+      ~packet_st()                            = default;
 
       uint8_t BufferAdd(uint8_t rx_data)
       {
-        checksum += rx_data;
-        buffer[buffer_idx] = rx_data;
-        buffer_idx = (buffer_idx + 1) % CMD_MAX_PACKET_LENGTH;
+        checksum           += rx_data;
+        buffer[buffer_idx]  = rx_data;
+        buffer_idx          = (buffer_idx + 1) % CMD_MAX_PACKET_LENGTH;
         return buffer_idx;
       }
 
@@ -172,20 +219,20 @@ namespace CMD
       {
         buffer.fill(0);
         buffer_idx = 0;
-        data_cnt = 0;
-        checksum = 0;
+        data_cnt   = 0;
+        checksum   = 0;
         state.SetStep(0);
       }
     };
 
-    bool m_Isconnected;
-    cfg_t m_cfg;
+    bool      m_Isconnected;
+    cfg_t     m_cfg;
     packet_st m_packet;
 
-    void *m_obj;
-    evt_cb m_func;
+    void    *m_obj;
+    evt_cb   m_func;
     uint32_t m_packet_sending_ms;
-    uint8_t m_reqFlag;
+    uint8_t  m_reqFlag;
 
 #ifdef _USE_HW_RTOS
     osMutexId m_mutex_id;
@@ -208,7 +255,7 @@ namespace CMD
      *  func
      ****************************************************/
 
-    inline void Init(cfg_t &cfg)
+    inline error_t Init(cfg_t &cfg)
     {
       m_cfg = cfg;
       if (uartOpen(cfg.ch, cfg.baud))
@@ -216,6 +263,13 @@ namespace CMD
         LOG_PRINT("[OK] Init Open Success! Uart ch[%d], baud[%d]", cfg.ch, cfg.baud);
         m_Isconnected = true;
       }
+      else
+      {
+        LOG_PRINT("[NG] Init Open Failed! Uart ch[%d], baud[%d]", cfg.ch, cfg.baud);
+        return ERROR_FAIL;
+      }
+
+      return ERROR_SUCCESS;
     }
 
     inline bool Recovery()
@@ -249,7 +303,7 @@ namespace CMD
 
     inline void AttCallbackFunc(void *obj, evt_cb cb)
     {
-      m_obj = obj;
+      m_obj  = obj;
       m_func = cb;
     }
 
@@ -269,7 +323,7 @@ namespace CMD
       if (SendCmd(ptr_data, size) == ERROR_SUCCESS)
       {
         uint32_t pre_ms = millis();
-        bool result = true;
+        bool     result = true;
         while (receivePacket() == false)
         {
           if ((millis() - pre_ms) > timeout)
@@ -395,7 +449,7 @@ namespace CMD
 
         case STATE_WAIT_CHECKSUM:
           m_packet.checksum_recv = rx_data;
-          m_packet.checksum = (~m_packet.checksum) + 1;
+          m_packet.checksum      = (~m_packet.checksum) + 1;
           m_packet.state.SetStep(STATE_WAIT_STX0);
           if (m_packet.checksum == m_packet.checksum_recv)
             return true;
@@ -415,7 +469,7 @@ namespace CMD
   private:
     inline void receiveCplt()
     {
-      m_reqFlag = 0;
+      m_reqFlag        = 0;
       m_packet.resp_ms = millis() - m_packet_sending_ms;
       if (m_func && m_obj)
       {

@@ -3,6 +3,8 @@
  *
  *  Created on: Aug 27, 2023
  *      Author: gns2.lee
+ * 
+ *  edit :24.02.03 ext_op
  */
 #pragma once
 #ifndef AP__INC_ENLED_HPP_
@@ -17,6 +19,7 @@ struct enLed
   {
     GPIO_TypeDef * gpio_port{};
     uint16_t       gpio_pin{};
+    char name_str[32]{};
 
     cfg_t() = default;
     // copy constructor
@@ -30,13 +33,20 @@ struct enLed
 
     ~cfg_t() = default;
 
+    char *set_name(const char *name)
+    {
+      memset(&name_str[0], 0, sizeof(name_str));
+      strlcpy(&name_str[0], name, sizeof(name_str));
+      return &name_str[0];
+    }
+
   } m_cfg{};
 
 public:
   enLed() = default;
   ~enLed()= default;
   inline error_t Init(cfg_t& cfg){
-    LOG_PRINT("[OK] Init Success! pin [%d], port[%d]", cfg.gpio_pin, cfg.gpio_port);
+    LOG_PRINT("[OK] Init Success! LED [%s], pin [%d], port[%d]",cfg.name_str, cfg.gpio_pin, cfg.gpio_port);
     m_cfg = cfg;
     Off();
     return ERROR_SUCCESS;

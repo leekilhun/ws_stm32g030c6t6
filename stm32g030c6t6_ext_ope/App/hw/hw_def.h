@@ -37,12 +37,12 @@
 
 #define _USE_HW_WDG
 
-//#define _USE_HW_TIM
+#define _USE_HW_TIM
 #ifdef  _USE_HW_TIM
-#define      HW_TIM_MAX_CH          3
-#define        _TIM_3               _DEF_TIM1
-#define        _TIM_14               _DEF_TIM2
-#define        _TIM_16               _DEF_TIM3
+#define      HW_TIM_MAX_CH          1
+#define        _TIM_3               _DEF_TIM1 // for wheel encoder
+//#define        _TIM_14               _DEF_TIM2
+//#define        _TIM_16               _DEF_TIM3
 #endif
 
 
