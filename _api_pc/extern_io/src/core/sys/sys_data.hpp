@@ -1,6 +1,6 @@
 ﻿/*******************************************************************
  * \file   sys_data.hpp
- * \brief 
+ * \brief  �ý��ۿ� ����� �����͸� �����ϰ� �� ��ü���� �̿��� �� �ֵ��� api�� �����Ѵ�.
  * 
  * \author gns2.lee (gns2.lee@samsung.com)
  * \date   March 2024
@@ -13,6 +13,21 @@
 
 
 [
+    // json ���� �ۼ� ��Ģ
+    // 1. ������ �ݵ�� { �� �����ϸ� �������� } �� ������ �Ѵ�.
+    // 2. { } ���̿��� "key" : json_t ���·� �ۼ��Ѵ�.
+
+    // pasing flow
+    // 1. { } ������ ������ �Ľ��Ѵ�.
+    // 2. "key" : json_t ���·� �Ľ��Ѵ�. ����Ű�� ����
+    // 3. objects�� �����Ѵ�.
+    // 4. objects�� type�� object�� ���� �ٽ� value�� �Ľ��Ѵ�.
+    //    object - map<string, json_t>
+    // 5. array [json_t, json_t, ...] Ÿ����
+
+    // type object { "key" : json_t, "key" : json_t, ... }
+    // type array [json_t, json_t, ...]
+
 
 
  
@@ -28,7 +43,7 @@ namespace ap_core
 
   public:
     /**
-     * json 
+     * json �������� key data ������� �ۼ��Ѵ�.
      */
     enum class data_reg_idx : int
     {
@@ -139,7 +154,7 @@ namespace ap_core
       case data_reg_idx::serial_no:
         return std::get<int>(m_json.m_objects[static_cast<int>(type)]["serial_no"].value);
 
-        // 
+        // ������ case�鿡 ���� ó��
       default:
         return 0;
       }
@@ -156,7 +171,7 @@ namespace ap_core
       {
       case data_reg_idx::digit:
         return std::get<double>(m_json.m_objects[static_cast<int>(type)]["digit"].value);
-        // 
+        // ������ case�鿡 ���� ó��
       default:
         return 0.0;
       }
@@ -172,7 +187,7 @@ namespace ap_core
       {
       case data_reg_idx::machine:
         return std::get<std::string>(m_json.m_objects[static_cast<int>(type)]["machine"].value);
-        // 
+        // ������ case�鿡 ���� ó��
       default:
         return std::string{};
       }
@@ -190,7 +205,7 @@ namespace ap_core
       {
 			case data_reg_idx::checks:
 				return std::get<std::vector<bool>>(m_json.m_objects[static_cast<int>(type)]["checks"].value);
-        // 
+        // ������ case�鿡 ���� ó��
       default:
         return std::vector<bool>{};
       }
@@ -208,7 +223,7 @@ namespace ap_core
       case data_reg_idx::numbers:
 				return std::get<std::vector<int>>(m_json.m_objects[static_cast<int>(type)]["numbers"].value);
 
-        //
+        // ������ case�鿡 ���� ó��
       default:
         return std::vector<int>{};
       }
@@ -225,7 +240,7 @@ namespace ap_core
       //{
       //case data_reg_idx::weight:
       //  return std::get<std::vector<double>>(m_json.m_objects[static_cast<int>(type)]["weight"].value);
-        // 
+        // ������ case�鿡 ���� ó��
       //default:
         return std::vector<double>{};
       //}
@@ -243,7 +258,7 @@ namespace ap_core
         case data_reg_idx::members:
              return std::get<std::vector<std::string>>(m_json.m_objects[static_cast<int>(type)]["members"].value);
 
-        // 
+        // ������ case�鿡 ���� ó��
       default:
         return std::vector<std::string>{};
       }
@@ -265,7 +280,7 @@ namespace ap_core
       case data_reg_idx::configs:
         //return std::get<TinyC::json_obj_t >(m_json.m_datas[static_cast<int>(type)].value);
         return m_json.m_objects[static_cast<int>(type)];
-        //
+        // ������ case�鿡 ���� ó��
       default:
         return TinyC::json_obj_t{};
       }

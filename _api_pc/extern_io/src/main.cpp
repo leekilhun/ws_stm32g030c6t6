@@ -5,6 +5,8 @@
 cl /EHsc /std:c++20 main.cpp /Fe: m.exe
 cl /EHsc /std:c++20 main.cpp .\core\sys\sys.cpp .\core\hw\hw.cpp .\core\common\util\utils.cpp .\core\ap\ap.cpp /Fe: m.exe /I .\ /I .\core\ /I .\core\ap\ /I .\core\sys\ /I .\core\hw\ /I .\core\common\ /I .\core\common\util\ /I .\mcc_lib /I .\core\common\_inc_hw\ 
 
+
+
  프로젝트
  └─ src/
      ├── core/

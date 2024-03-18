@@ -379,6 +379,35 @@ namespace TinyC
 
 		bool is_loaded{};
 		//std::vector<json_t> m_datas{};
+
+		inline bool file_copy(const char *pdest, const char *psour)
+		{
+			std::ifstream ifs(psour, std::ios::binary);
+			if (!ifs.is_open())
+			{
+				// 원본 파일을 열 수 없는 경우 에러 처리
+				return false;
+			}
+
+			std::ofstream ofs(pdest, std::ios::binary);
+			if (!ofs.is_open())
+			{
+				// 복사할 파일을 생성할 수 없는 경우 에러 처리
+				return false;
+			}
+
+			// 파일의 내용을 읽어와서 복사
+			char buffer[4096];
+			while (ifs.read(buffer, sizeof(buffer)))
+			{
+				ofs.write(buffer, sizeof(buffer));
+			}
+
+			// 나머지 남은 부분 복사
+			ofs.write(buffer, ifs.gcount());
+
+			return true;
+		}
 		inline bool loadFromFile(const std::string& filename)
 		{
 			std::ifstream inFile(filename);
@@ -415,7 +444,7 @@ namespace TinyC
 			{
 				filename.erase(found);
 			}
-			file::FileCopy(std::string{ filename + "_old.json" }.c_str(), file.c_str());
+			file_copy(std::string{ filename + "_old.json" }.c_str(), file.c_str());
 
 			std::ofstream ofs(file);
 			if (!ofs.is_open())
